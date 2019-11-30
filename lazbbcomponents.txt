@@ -17,11 +17,11 @@ Propriétés communes
 			permet pas un défilement fluide, le processeur n'ayant pas le temps
 			d'effectuer le traitement dans le temps imparti. par défaut 50 ms.
   ScrollAutoString (chaîne): Caractères ajoutés entre la fin du texte et le début
-            du texte suivant lors du défilement. Par défaut "...".                                            }
+            du texte suivant lors du défilement. Par défaut "...".
   ScrollGraph (True ou false): Avtive le défilement graphique (pixel par pixel)
             ou texte(caractère par caractère). Par défaut "graphique".
   ScrollStep (nombre): Pas du défilement (caractère ou pixel selon le mode choisi)
-            Par défaut 1.                  }
+            Par défaut 1.
   ScrollDirection : sens de défilement, gauche à droite ou droite à gauche. Par 
             défaut, défilement de gauche à droite.
 			
@@ -31,7 +31,7 @@ Utilisation libre.
 			
 LazbbComponents packet
 
-Components with properties unavailable in Lazarus/FPC native components
+Extra components with properties unavailable in Lazarus/FPC native components
 
 TSCrollButton : Text scrolling button (TSpeedbutton descendant)
 TSCrollLabel : Text scrolling label (TLabel descendant)
@@ -45,11 +45,11 @@ Common properties
             scrolling speed. A too low value doesn(t allow a smooth scrolling as 
 			the processor cannot do its job in the interval. Default : 50 ms.
   ScrollAutoString (string): String added at teh end of the text during scrolling.
-            Default is '...'                                            }
+            Default is '...' 
   ScrollGraph (True or false): Enable graphic (smooth) scrolling (pixel by pixel 
             instead text scrolling (character by character). Default: graphic.
   ScrollStep (number): Scrolling step (character or pixel according scrolling 
-            mode). Default 1                  }
+            mode). Default 1
   ScrollDirection : Scrolling direction, left to right or right to left.
             Default : left to right.  
 
