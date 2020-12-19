@@ -141,7 +141,48 @@ type
     property SCrollDirection: TSCrollDirection read FSCrollDirection write SetSCrollDirection default sdLeftToRight;
   end;
 
-  procedure Register;
+ TColorPicker = Class(TPanel)
+   private
+     FColor: Tcolor;
+     ColorCombo: TComboBox;
+     ColorBtn: TSpeedButton;
+     ColorDlg: TColorDialog;
+   protected
+   public
+     constructor Create(AOwner: TComponent); override;
+     procedure DoResize(Sender: TObject);
+     procedure DoDrawItem (Control: TWinControl; Index: Integer; ARect: TRect; State: TOwnerDrawState);
+     procedure DoSelect(Sender: TObject);
+     procedure DoBtnClick(Sender: TObject);
+     procedure SetColor(cl: TColor);
+   published
+     property color: TColor read FColor write SetColor;
+ end;
+
+ const
+   ColorArr: array of string = ('clDefault',
+               'clBlack',
+               'clMaroon',
+               'clGreen',
+               'clOlive',
+               'clNavy',
+               'clPurple',
+               'clTeal',
+               'clGray',
+               'clSilver',
+               'clRed',
+               'clLime',
+               'clYellow',
+               'clBlue',
+               'clFuchsia',
+               'clAqua',
+               'clWhite',
+               'clMoneyGreen',
+               'clSkyBlue',
+               'clCream',
+               'clMedGray');
+
+procedure Register;
 
 implementation
 
@@ -150,6 +191,7 @@ begin
    {$I lazbbcontrols_icon.lrs}
    RegisterComponents('lazbbComponents',[TSCrollButton]);
    RegisterComponents('lazbbComponents',[TScrollLabel]);
+   RegisterComponents('lazbbComponents',[TColorPicker]);
 end;
 
 
@@ -624,6 +666,110 @@ begin
     ScrollText:=Copy(ScrollText,Length(ScrollText),1)+Copy(ScrollText, 1, Length(ScrollText)-1);
     inherited Caption:= scrolltext;
   end;
+end;
+
+// TColorPicker
+// System color combo plus color dialog
+
+constructor TColorPicker.Create(AOwner: TComponent);
+var
+  AStr:String;
+begin
+  inherited;
+  {$I lazbbcolorbtn.lrs}
+  Caption:= '';
+  BevelInner:= bvNone;
+  BevelOuter:= bvNone;
+  Height:= 23;
+  Width:= 128;
+  OnResize:= @DoResize;
+
+  ColorCombo:= TcomboBox.Create(self);
+  ColorCombo.Parent:= self;
+  ColorCombo.Left:= 0;
+  ColorCombo.Top:= 0;
+  ColorCombo.height:= Height;
+  ColorCombo.width:= 100;
+  ColorCombo.BorderStyle:= bsNone;
+  ColorCombo.Style:= csOwnerDrawFixed;
+  ColorCombo.visible:= true;
+  ColorCombo.Items:= TstringList.Create;
+  for AStr in ColorArr do ColorCombo.Items.Add (AStr);
+  ColorCombo.ItemIndex:= 0;
+  ColorCombo.OnDrawItem:= @DoDrawItem;
+  ColorCombo.OnSelect:=  @DoSelect;
+  ColorBtn:= TSpeedButton.Create(self);
+  ColorBtn.Parent:= self;
+  ColorBtn.left:= 105;
+  ColorBtn.Top:= 0;
+  ColorBtn.Height:= Height;
+  ColorBtn.Width:= Height;
+  ColorBtn.Visible:= true;
+  ColorBtn.LoadGlyphFromLazarusResource('tcolorbtn');
+  ColorBtn.OnClick:= @DoBtnClick;
+  ColorDlg:= TColorDialog.Create(self);
+  //ColorDlg.Parent:= Self;
+end;
+
+procedure TColorPicker.SetColor(cl: TColor);
+var
+  i: integer;
+begin
+  if FColor <> cl then
+  begin
+    ColorCombo.ItemIndex:=-1;
+    FColor:= cl;
+    For i:= 0 to ColorCombo.Items.Count-1 do
+      if ColorToString(cl)= ColorCombo.Items[i] then
+      begin
+        ColorCombo.ItemIndex:=i;
+      end;
+    if ColorCombo.ItemIndex=-1 then
+    begin
+      ColorCombo.AddItem(ColorToString(cl), nil);
+      ColorCombo.ItemIndex:= ColorCombo.Items.Count-1; ;
+    end;
+  end;
+end;
+
+procedure TColorPicker.DoResize(Sender: Tobject);
+begin
+  ColorCombo.Width:= width-28;
+  ColorBtn.left:= width-23;
+  ColorCombo.Height:= height;
+end;
+
+procedure TColorPicker.DoSelect(Sender: TObject);
+begin
+  FColor:= StringToColor(ColorCombo.Items[ColorCombo.ItemIndex]);
+end;
+
+procedure TColorPicker.DoDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: TOwnerDrawState);
+var
+  ltRect: TRect;
+  flRect: TRect;
+begin
+  ColorCombo.Canvas.FillRect(ARect);                                         //first paint normal background
+  ColorCombo.Canvas.TextRect(ARect, 22, ARect.Top, ColorCombo.Items[Index]);  //paint item text
+  ltRect.Left   := ARect.Left   + 2;                                        //rectangle for color
+  ltRect.Right  := ARect.Left   + 16;
+  ltRect.Top    := ARect.Top    + 2;
+  ltRect.Bottom := ARect.Bottom - 2;
+  flrect.Left:= ltRect.Left+1;
+  flRect.Right:= ltRect.Right-1;
+  flRect.Top:= ltRect.Top+1;
+  flRect.Bottom:= ltRect.Bottom-1;
+  ColorCombo.Canvas.Pen.Color:= clBlack;
+  ColorCombo.Canvas.Rectangle(ltRect);
+  ColorCombo.Canvas.Brush.Color := StringToColor(ColorCombo.Items[Index]);
+  ColorCombo.Canvas.FillRect(flRect);
+end;
+
+procedure TColorPicker.DoBtnClick(Sender: TObject);
+begin
+  if ColorDlg.Execute then
+  SetColor(ColorDlg.Color);
+
 end;
 
 end.
