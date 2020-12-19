@@ -4,6 +4,7 @@
 
 __TSCrollButton__ : Text scrolling button (TSpeedbutton descendant)<br>
 __TSCrollLabel__ : Text scrolling label (TLabel descendant)
+__TColorPicker__ : Similar to the object inspector color selector, combine a system colors combo box and a color dialog.
 
 ## Common properties
 
