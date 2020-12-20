@@ -3,7 +3,8 @@
 ## Extra components with properties unavailable in Lazarus/FPC native components
 
 __TSCrollButton__ : Text scrolling button (TSpeedbutton descendant)<br>
-__TSCrollLabel__ : Text scrolling label (TLabel descendant)
+__TSCrollLabel__ : Text scrolling label (TLabel descendant)<br>
+__TColorPicker__ : Similar to the object inspector color selector, combine a system colors combo box and a color dialog.
 
 ## Common properties
 
