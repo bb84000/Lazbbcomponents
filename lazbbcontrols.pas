@@ -1,8 +1,9 @@
 {******************************************************************************}
 { lazbbcontrols : Controls with properties unavailable in lazarus controls     }
 { Added to lazbbComponents palette                                             }
-{ bb - sdtp - november 2019                                                    }
+{ bb - sdtp - december 2020                                                    }
 { TSCrollButton : Speedbutton with scrolling caption                           }
+{ TSCrollLabel ;: Label with scrolling caption                                 }
 {   Scrolling (boolean): Enable or disable caption scrolling. When caption is  }
 {       shorter than button width, scrolling is always disabled.               }
 {   ScrollInterval (ms): Set the scroolling speed. A low interval means a high }
@@ -13,6 +14,7 @@
 {       instead char by char).                                                 }
 {   ScrollStep (integer): Increment scrolling step. default 1                  }
 {   ScrollDirection (sdLeftToRight, sdRightToLeft)                             }
+{ TColorPicker : Combine color combobox with color dialog                      }
 {******************************************************************************}
 
 unit lazbbcontrols;
@@ -22,7 +24,7 @@ unit lazbbcontrols;
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics, Dialogs, Buttons;
+  Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics, Dialogs, Buttons, PropEdits;
 
 type
   TBidiMod = (Disabled);
@@ -141,26 +143,34 @@ type
     property SCrollDirection: TSCrollDirection read FSCrollDirection write SetSCrollDirection default sdLeftToRight;
   end;
 
- TColorPicker = Class(TPanel)
+  // TColorPicker
+  // System color combo plus color dialog
+  // ColorDialog title cannot change, so no title property
+
+ TColorPicker = Class(TCustomControl)
    private
      FColor: Tcolor;
+     FItemHeight: Integer;
      ColorCombo: TComboBox;
      ColorBtn: TSpeedButton;
      ColorDlg: TColorDialog;
    protected
+
    public
      constructor Create(AOwner: TComponent); override;
      procedure DoResize(Sender: TObject);
      procedure DoDrawItem (Control: TWinControl; Index: Integer; ARect: TRect; State: TOwnerDrawState);
      procedure DoSelect(Sender: TObject);
      procedure DoBtnClick(Sender: TObject);
+     procedure SetItemHeight(ih: integer);
      procedure SetColor(cl: TColor);
    published
-     property color: TColor read FColor write SetColor;
- end;
+     property ItemHeight : integer  read FItemHeight write SetItemHeight;
+     property Color: TColor read FColor write SetColor;
+  end;
 
  const
-   ColorArr: array of string = ('clDefault',
+   ColorArr: array of string = (
                'clBlack',
                'clMaroon',
                'clGreen',
@@ -180,7 +190,9 @@ type
                'clMoneyGreen',
                'clSkyBlue',
                'clCream',
-               'clMedGray');
+               'clMedGray',
+               'clNone',
+               'clDefault');
 
 procedure Register;
 
@@ -192,6 +204,8 @@ begin
    RegisterComponents('lazbbComponents',[TSCrollButton]);
    RegisterComponents('lazbbComponents',[TScrollLabel]);
    RegisterComponents('lazbbComponents',[TColorPicker]);
+   // Hide some propertioes from
+   {RegisterPropertyEditor(TypeInfo(Boolean), TColorPicker, 'Autosize', THiddenPropertyEditor); // Need IDEIntf packet }
 end;
 
 
@@ -202,7 +216,6 @@ end;
 constructor TScrollButton.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
-
   Parent:= TWinControl(aOwner);
   FCaption:='ScrollButton';
   FScrolling:= true;
@@ -669,7 +682,6 @@ begin
 end;
 
 // TColorPicker
-// System color combo plus color dialog
 
 constructor TColorPicker.Create(AOwner: TComponent);
 var
@@ -678,24 +690,24 @@ begin
   inherited;
   {$I lazbbcolorbtn.lrs}
   Caption:= '';
-  BevelInner:= bvNone;
-  BevelOuter:= bvNone;
-  Height:= 23;
   Width:= 128;
   OnResize:= @DoResize;
-
   ColorCombo:= TcomboBox.Create(self);
   ColorCombo.Parent:= self;
+  ColorCombo.Style:= csOwnerDrawFixed;
   ColorCombo.Left:= 0;
   ColorCombo.Top:= 0;
-  ColorCombo.height:= Height;
+  Height:= 23;
+  ItemHeight:= 15;
+  ColorCombo.height:= height;
+  ColorCombo.ItemHeight:= ItemHeight;
   ColorCombo.width:= 100;
   ColorCombo.BorderStyle:= bsNone;
-  ColorCombo.Style:= csOwnerDrawFixed;
   ColorCombo.visible:= true;
   ColorCombo.Items:= TstringList.Create;
   for AStr in ColorArr do ColorCombo.Items.Add (AStr);
-  ColorCombo.ItemIndex:= 0;
+  ColorCombo.ItemIndex:= ColorCombo.Items.Count-1;
+  FColor:= clDefault;
   ColorCombo.OnDrawItem:= @DoDrawItem;
   ColorCombo.OnSelect:=  @DoSelect;
   ColorBtn:= TSpeedButton.Create(self);
@@ -708,23 +720,34 @@ begin
   ColorBtn.LoadGlyphFromLazarusResource('tcolorbtn');
   ColorBtn.OnClick:= @DoBtnClick;
   ColorDlg:= TColorDialog.Create(self);
-  //ColorDlg.Parent:= Self;
+
+end;
+
+
+procedure TColorPicker.SetItemHeight(ih: integer);
+begin
+  if FItemHeight <> ih then
+  FItemHeight:= ih;
+  ColorCombo.ItemHeight:= ih;
 end;
 
 procedure TColorPicker.SetColor(cl: TColor);
 var
   i: integer;
+  newcol: boolean;
 begin
   if FColor <> cl then
   begin
-    ColorCombo.ItemIndex:=-1;
+    //ColorCombo.ItemIndex:=-1;
+    newcol:=true;
     FColor:= cl;
     For i:= 0 to ColorCombo.Items.Count-1 do
       if ColorToString(cl)= ColorCombo.Items[i] then
       begin
         ColorCombo.ItemIndex:=i;
+        newcol:= false;
       end;
-    if ColorCombo.ItemIndex=-1 then
+    if newcol then
     begin
       ColorCombo.AddItem(ColorToString(cl), nil);
       ColorCombo.ItemIndex:= ColorCombo.Items.Count-1; ;
@@ -737,6 +760,7 @@ begin
   ColorCombo.Width:= width-28;
   ColorBtn.left:= width-23;
   ColorCombo.Height:= height;
+  height:= ColorCombo.Height;
 end;
 
 procedure TColorPicker.DoSelect(Sender: TObject);
@@ -752,7 +776,7 @@ begin
   ColorCombo.Canvas.FillRect(ARect);                                         //first paint normal background
   ColorCombo.Canvas.TextRect(ARect, 22, ARect.Top, ColorCombo.Items[Index]);  //paint item text
   ltRect.Left   := ARect.Left   + 2;                                        //rectangle for color
-  ltRect.Right  := ARect.Left   + 16;
+  ltRect.Right  := ARect.Left   + 15;
   ltRect.Top    := ARect.Top    + 2;
   ltRect.Bottom := ARect.Bottom - 2;
   flrect.Left:= ltRect.Left+1;
@@ -767,6 +791,7 @@ end;
 
 procedure TColorPicker.DoBtnClick(Sender: TObject);
 begin
+  ColorDlg.Color:= FColor;
   if ColorDlg.Execute then
   SetColor(ColorDlg.Color);
 
