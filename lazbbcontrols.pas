@@ -151,6 +151,7 @@ type
    private
      FColor: Tcolor;
      FItemHeight: Integer;
+     FItemWidth: Integer;
      ColorCombo: TComboBox;
      ColorBtn: TSpeedButton;
      ColorDlg: TColorDialog;
@@ -163,10 +164,17 @@ type
      procedure DoSelect(Sender: TObject);
      procedure DoBtnClick(Sender: TObject);
      procedure SetItemHeight(ih: integer);
+     procedure SetItemWidth(iw: integer);
      procedure SetColor(cl: TColor);
+
    published
      property ItemHeight : integer  read FItemHeight write SetItemHeight;
+     property ItemWidth : integer  read FItemWidth write SetItemWidth;
      property Color: TColor read FColor write SetColor;
+     property Enabled;
+     property TabOrder;
+     Property Tabstop;
+     property Visible;
   end;
 
  const
@@ -699,8 +707,10 @@ begin
   ColorCombo.Top:= 0;
   Height:= 23;
   ItemHeight:= 15;
+  ItemWidth:= 0;
   ColorCombo.height:= height;
   ColorCombo.ItemHeight:= ItemHeight;
+  ColorCombo.ItemWidth:= ItemWidth;
   ColorCombo.width:= 100;
   ColorCombo.BorderStyle:= bsNone;
   ColorCombo.visible:= true;
@@ -727,8 +737,19 @@ end;
 procedure TColorPicker.SetItemHeight(ih: integer);
 begin
   if FItemHeight <> ih then
-  FItemHeight:= ih;
-  ColorCombo.ItemHeight:= ih;
+  begin
+    FItemHeight:= ih;
+    ColorCombo.ItemHeight:= ih;
+  end;
+end;
+
+procedure TColorPicker.SetItemWidth(iw: integer);
+begin
+  if FItemWidth <> iw then
+  begin
+    FItemWidth:= iw;
+    ColorCombo.ItemWidth:= iw;
+  end;
 end;
 
 procedure TColorPicker.SetColor(cl: TColor);
@@ -754,6 +775,8 @@ begin
     end;
   end;
 end;
+
+
 
 procedure TColorPicker.DoResize(Sender: Tobject);
 begin
