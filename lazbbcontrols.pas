@@ -15,6 +15,7 @@
 {   ScrollStep (integer): Increment scrolling step. default 1                  }
 {   ScrollDirection (sdLeftToRight, sdRightToLeft)                             }
 { TColorPicker : Combine color combobox with color dialog                      }
+{                Popup menu to copy/paste colour name can be localized         }
 {******************************************************************************}
 
 unit lazbbcontrols;
@@ -24,7 +25,8 @@ unit lazbbcontrols;
 interface
 
 uses
-  Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics, Dialogs, Buttons, PropEdits;
+  Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics,
+  Dialogs, Buttons, Menus, Clipbrd, PropEdits;
 
 type
   TBidiMod = (Disabled);
@@ -147,34 +149,49 @@ type
   // System color combo plus color dialog
   // ColorDialog title cannot change, so no title property
 
- TColorPicker = Class(TCustomControl)
+ TColorPicker = Class(TWinControl)
    private
      FColor: Tcolor;
      FItemHeight: Integer;
      FItemWidth: Integer;
+     FItems: TStrings;
+     FMnuCopyCaption: String;
+     FMnuPasteCaption: String;
      ColorCombo: TComboBox;
      ColorBtn: TSpeedButton;
      ColorDlg: TColorDialog;
-   protected
-
-   public
-     constructor Create(AOwner: TComponent); override;
+     PopupMnu: TPopupMenu;
+     MnuCopy, MnuPaste: TMenuItem;
      procedure DoResize(Sender: TObject);
      procedure DoDrawItem (Control: TWinControl; Index: Integer; ARect: TRect; State: TOwnerDrawState);
      procedure DoSelect(Sender: TObject);
      procedure DoBtnClick(Sender: TObject);
      procedure SetItemHeight(ih: integer);
      procedure SetItemWidth(iw: integer);
-     procedure SetColor(cl: TColor);
+     procedure SetColour(cl: TColor);
+     procedure MnuCopyClick(Sender: TObject);
+     procedure MnuPasteClick(Sender: TObject);
+     procedure SetMnuCopyCaption (mcpy: string);
+     procedure SetMnuPasteCaption (mpast: string);
+     procedure MnuPopup(Sender: TObject);
+
+   protected
+
+   public
+     constructor Create(AOwner: TComponent); override;
 
    published
      property ItemHeight : integer  read FItemHeight write SetItemHeight;
      property ItemWidth : integer  read FItemWidth write SetItemWidth;
      property Color: TColor read FColor write SetColor;
+     property MnuCopyCaption: String read FMnuCopyCaption write SetMnuCopyCaption;
+     property MnuPasteCaption: string read FMnuPasteCaption write SetMnuPasteCaption;
      property Enabled;
      property TabOrder;
      Property Tabstop;
      property Visible;
+     property Align;
+     property Font;
   end;
 
  const
@@ -201,6 +218,7 @@ type
                'clMedGray',
                'clNone',
                'clDefault');
+
 
 procedure Register;
 
@@ -699,10 +717,12 @@ begin
   {$I lazbbcolorbtn.lrs}
   Caption:= '';
   Width:= 128;
+
   OnResize:= @DoResize;
   ColorCombo:= TcomboBox.Create(self);
+  ColorBtn:= TSpeedButton.Create(self);
   ColorCombo.Parent:= self;
-  ColorCombo.Style:= csOwnerDrawFixed;
+  ColorCombo.Style:= csOwnerDrawfixed;
   ColorCombo.Left:= 0;
   ColorCombo.Top:= 0;
   Height:= 23;
@@ -715,22 +735,85 @@ begin
   ColorCombo.BorderStyle:= bsNone;
   ColorCombo.visible:= true;
   ColorCombo.Items:= TstringList.Create;
+  ColorCombo.Font:= Font;
   for AStr in ColorArr do ColorCombo.Items.Add (AStr);
   ColorCombo.ItemIndex:= ColorCombo.Items.Count-1;
   FColor:= clDefault;
   ColorCombo.OnDrawItem:= @DoDrawItem;
   ColorCombo.OnSelect:=  @DoSelect;
-  ColorBtn:= TSpeedButton.Create(self);
   ColorBtn.Parent:= self;
   ColorBtn.left:= 105;
   ColorBtn.Top:= 0;
   ColorBtn.Height:= Height;
   ColorBtn.Width:= Height;
+  ColorBtn.Margin:= -1;
   ColorBtn.Visible:= true;
   ColorBtn.LoadGlyphFromLazarusResource('tcolorbtn');
   ColorBtn.OnClick:= @DoBtnClick;
   ColorDlg:= TColorDialog.Create(self);
+  PopupMnu:= TPopupMenu.Create(self);
+  PopupMnu.OnPopup:= @MnuPopup;
+  MnuCopy := TMenuItem.Create(PopupMnu);
+  MnuCopy.Caption := MnuCopyCaption;
+  MnuCopy.OnClick := @MnuCopyClick;
+  PopupMnu.Items.Add(MnuCopy);
+  MnuPaste := TMenuItem.Create(PopupMnu);
+  Mnupaste.Caption := MnuPasteCaption;
+  MnuPaste.OnClick := @MnuPasteClick;
+  PopupMnu.Items.Add(MnuPaste);
+  PopupMenu:= PopupMnu;
+  MnuCopyCaption:= '&Copy';
+  MnuPasteCaption:= '&Paste';
+  FItems:= TStringList.create;
+  FItems.Assign(ColorCombo.Items);
+end;
 
+procedure TColorPicker.MnuCopyClick(Sender: TObject);
+begin
+  Clipboard.AsText:= ColorCombo.Items [ColorCombo.ItemIndex];
+end;
+
+procedure TColorPicker.MnuPasteClick(Sender: TObject);
+var
+  col: TColor;
+begin
+  try
+    col:= StringToColor(Clipboard.AsText);
+    SetColor(col);
+  except
+    ShowMessage('Wrong color value');
+  end;
+end;
+
+procedure TColorPicker.MnuPopup(Sender: TObject);
+var
+  col: TColor;
+begin
+  try
+    // avoid to paste a wrong color name
+    col:= StringToColor(Clipboard.AsText);
+    MnuPaste.Enabled:= True;
+  except
+    MnuPaste.Enabled:= False;
+  end;
+end;
+
+procedure TColorPicker.SetMnuCopyCaption(mcpy: string);
+begin
+  if FMnuCopyCaption <> mcpy then
+  begin
+    FMnuCopyCaption:= mcpy;
+    MnuCopy.Caption := mcpy;
+  end;
+end;
+
+procedure TColorPicker.SetMnuPasteCaption(mpast: string);
+begin
+  if FMnupasteCaption <> mpast then
+  begin
+    FMnuPasteCaption:= mpast;
+    MnuPaste.Caption := mpast;
+  end;
 end;
 
 
@@ -740,6 +823,8 @@ begin
   begin
     FItemHeight:= ih;
     ColorCombo.ItemHeight:= ih;
+    Height:= ColorCombo.Height;
+    ColorBtn.Height:= Height;
   end;
 end;
 
@@ -752,7 +837,7 @@ begin
   end;
 end;
 
-procedure TColorPicker.SetColor(cl: TColor);
+procedure TColorPicker.SetColour(cl: TColor);
 var
   i: integer;
   newcol: boolean;
@@ -781,7 +866,10 @@ end;
 procedure TColorPicker.DoResize(Sender: Tobject);
 begin
   ColorCombo.Width:= width-28;
-  ColorBtn.left:= width-23;
+  ColorBtn.Top:= 0;
+  ColorBtn.left:= width-Height;
+  ColorBtn.Height:= Height;
+  ColorBtn.Width:= Height;
   ColorCombo.Height:= height;
   height:= ColorCombo.Height;
 end;
@@ -791,22 +879,27 @@ begin
   FColor:= StringToColor(ColorCombo.Items[ColorCombo.ItemIndex]);
 end;
 
+// Owner draw paint combho with color
+
 procedure TColorPicker.DoDrawItem(Control: TWinControl; Index: Integer; ARect: TRect; State: TOwnerDrawState);
 var
   ltRect: TRect;
+  txtTop: integer;
+  ColTop: Integer;
   flRect: TRect;
 begin
-  ColorCombo.Canvas.FillRect(ARect);                                         //first paint normal background
-  ColorCombo.Canvas.TextRect(ARect, 22, ARect.Top, ColorCombo.Items[Index]);  //paint item text
-  ltRect.Left   := ARect.Left   + 2;                                        //rectangle for color
-  ltRect.Right  := ARect.Left   + 15;
-  ltRect.Top    := ARect.Top    + 2;
-  ltRect.Bottom := ARect.Bottom - 2;
-  flrect.Left:= ltRect.Left+1;
-  flRect.Right:= ltRect.Right-1;
+  ColorCombo.Canvas.FillRect(ARect);                                                              //first paint normal background
+  txtTop:= (ARect.Bottom-ARect.Top-ColorCombo.Canvas.TextHeight(ColorCombo.Items[Index])) div 2;  // To vertically center text
+  ColTop:= (ARect.Bottom-ARect.Top-13) div 2;                                                     // Vertically center color square
+  ColorCombo.Canvas.TextRect(ARect, 22, ARect.Top+txtTop, ColorCombo.Items[Index]);               //paint item text
+  ltRect.Left   := ARect.Left+2;                                                                  //rectangle for color
+  ltRect.Right  := ltRect.Left+13;
+  ltRect.Top    := ARect.Top+ColTop;
+  ltRect.Bottom := ltRect.Top+13 ;
+  flrect.Left:= ltRect.Left+1;                                                                    //Reduce 1 pixel
+  flRect.Right:= ltRect.Right-1;                                                                  //to see the lines around the colour
   flRect.Top:= ltRect.Top+1;
-  flRect.Bottom:= ltRect.Bottom-1;
-  ColorCombo.Canvas.Pen.Color:= clBlack;
+  flRect.Bottom:= ltRect.Bottom-1;                                                                //
   ColorCombo.Canvas.Rectangle(ltRect);
   ColorCombo.Canvas.Brush.Color := StringToColor(ColorCombo.Items[Index]);
   ColorCombo.Canvas.FillRect(flRect);
@@ -816,7 +909,7 @@ procedure TColorPicker.DoBtnClick(Sender: TObject);
 begin
   ColorDlg.Color:= FColor;
   if ColorDlg.Execute then
-  SetColor(ColorDlg.Color);
+  SetColour(ColorDlg.Color);
 
 end;
 

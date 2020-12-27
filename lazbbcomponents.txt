@@ -6,8 +6,10 @@ Composants supplémentaires ayant des propriétés non disponibles dsans ceux de
 
 TSCrollButton : Bouton à défilement de texte (Descendant de TSpeedbutton)
 TSCrollLabel : Label à défilement de texte (Descendant de TLabel)
+TColorPicker : Choix de couleurs similaire à celui de l'inspecteur de composants
+               (combo box de couleurs plus bouton d'appel du dialogue de couleurs)
 
-Propriétés communes
+TSCrollButton et TScrollLabel
 
   Scrolling (True ou false): Active ou désactive le défilement du texte. 
             Si le texte est plus court que la largeur du bouton, le défilement 
@@ -25,6 +27,20 @@ Propriétés communes
   ScrollDirection : sens de défilement, gauche à droite ou droite à gauche. Par 
             défaut, défilement de gauche à droite.
 			
+TcolorPicker
+
+  Les couleurs de base, ainsi que leurs identifiants ne peuvent pas être changés.
+  Le texte sélectionné n'est pas éditable. Pour changer la coueur  sélectionnée, utiliser
+  le dialogue de couleurs ou coller une couleur avec le menu popup. Une couleur invalide
+  n'est pas prise en compte.
+  Les couleurs qui ne sont pas de base s'ajoutent à la fin de la liste.
+  Comme avec la combo box de base, la hauteur du composant dépend de la hauteur des items.
+  Le dialogue de couleurs est localisé par le système d'exploitation.
+
+
+  Color : Couleur initiale
+  MnuCopyCaption, MnuPasteCaption : permettent la localisation du popup.
+
 Utilisation libre.
 			
 *************************************************************************************
@@ -35,8 +51,9 @@ Extra components with properties unavailable in Lazarus/FPC native components
 
 TSCrollButton : Text scrolling button (TSpeedbutton descendant)
 TSCrollLabel : Text scrolling label (TLabel descendant)
+TColorPicker : Colors choice similar to Components inspector (Colors combo box plus colors dialog button)
 
-Common properties
+TSCrollButton and TScrollLabel
 
   Scrolling (True or false): Enable or disable caption scrolling. When caption is
             shorter than button width, scrolling is always disabled. Default: 
@@ -51,8 +68,20 @@ Common properties
   ScrollStep (number): Scrolling step (character or pixel according scrolling 
             mode). Default 1
   ScrollDirection : Scrolling direction, left to right or right to left.
-            Default : left to right.  
+            Default : left to right.
+
+TcolorPicker
+
+  Base colors, and their identifiers cannot be changed.
+  Selected text cannot be edited. To change the selected color, use the colors dialog
+  or paste a color with the popup menu. An invalid color is ignored.
+  Selected colours not in base colours are added at the end of the list.
+  Like base combo box, component height is related to the items height.
+  The colors dialog is localized by the operating system.
+
+  Color (TColor): Initial color
+  MnuCopyCaption, MnuPasteCaption (String): allow popup localization
 
 Free use.
 
-bb - sdtp - november 2019
+bb - sdtp - december 2020
