@@ -168,7 +168,7 @@ type
      procedure DoBtnClick(Sender: TObject);
      procedure SetItemHeight(ih: integer);
      procedure SetItemWidth(iw: integer);
-     procedure SetColour(cl: TColor);
+     procedure SetColor(cl: TColor);
      procedure MnuCopyClick(Sender: TObject);
      procedure MnuPasteClick(Sender: TObject);
      procedure SetMnuCopyCaption (mcpy: string);
@@ -837,7 +837,7 @@ begin
   end;
 end;
 
-procedure TColorPicker.SetColour(cl: TColor);
+procedure TColorPicker.SetColor(cl: TColor);
 var
   i: integer;
   newcol: boolean;
@@ -909,7 +909,7 @@ procedure TColorPicker.DoBtnClick(Sender: TObject);
 begin
   ColorDlg.Color:= FColor;
   if ColorDlg.Execute then
-  SetColour(ColorDlg.Color);
+  SetColor(ColorDlg.Color);
 
 end;
 
