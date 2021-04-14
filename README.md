@@ -4,8 +4,8 @@
 
 __TSCrollButton__ : Text scrolling button (TSpeedbutton descendant)<br>
 __TSCrollLabel__ : Text scrolling label (TLabel descendant)<br>
-__TColorPicker__ : Similar to the object inspector color selector, combine a system colors combo box and a color dialog.
-__TCheckBoxX__ : A checkbox with extra features, cross mark,, bullet, diamond, color fill and picture in addition to usual check mark.
+__TColorPicker__ : Similar to the object inspector color selector, combine a system colors combo box and a color dialog.<br>
+__TCheckBoxX__ : A checkbox with extra features, cross mark,, bullet, diamond, color fill and picture in addition to usual check mark.<br>
 __TitlePanel__ : A panel with groupbos like title. Title can be centered or left/right justified.
 
 ## TSCrollButton and TScrollLabel properties
@@ -28,14 +28,14 @@ __ScrollDirection__ : Scrolling direction, left to right or right to left. Defau
 __Color__ (TColor): Initial color<br>
 __MnuCopyCaption, MnuPasteCaption__ : allow popup localization<br>
 
-## TCheckBoxX
+## TCheckBoxX properties
 
-__CheckBoxType__ Cross, Mark, Bullet, Diamond, Color, picture
+__CheckBoxType__ Cross, Mark, Bullet, Diamond, Color, picture<br>
 __CheckColor__ Color of the above item (excepted picture)
 
-## TitlePanel
+## TitlePanel properties
 
   Bevel and border style are disabled. Border color can be customized. Title can be centered, left justified or right justified.
 
 Free use.<br>
-bb - sdtp - december 2020
+bb - sdtp - april 2021
