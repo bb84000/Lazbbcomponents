@@ -26,11 +26,47 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics,
-  Dialogs, Buttons, Menus, Clipbrd, PropEdits;
+  Dialogs, Buttons, Menus, Clipbrd, PropEdits, Messages;
+
+Const
+  ColorArr: array of string = (
+               'clBlack',
+               'clMaroon',
+               'clGreen',
+               'clOlive',
+               'clNavy',
+               'clPurple',
+               'clTeal',
+               'clGray',
+               'clSilver',
+               'clRed',
+               'clLime',
+               'clYellow',
+               'clBlue',
+               'clFuchsia',
+               'clAqua',
+               'clWhite',
+               'clMoneyGreen',
+               'clSkyBlue',
+               'clCream',
+               'clMedGray',
+               'clNone',
+               'clDefault');
+
+   { Other constants }
+   fRBoxWidth  : Integer = 13; // Width of rectangular checkbox
+   fRBoxHeight : Integer = 13; // Height of rectangular checkbox
 
 type
   TBidiMod = (Disabled);
   TSCrollDirection= (sdLeftToRight, sdRightToLeft);
+
+  // TChceckboxX
+  TState = (cbUnchecked,cbChecked,cbGrayed);
+  TType = (cbCross,cbMark,cbBullet,cbDiamond,cbRect, cbBMP); // Added
+  TMouseState = (msMouseUp,msMouseDown);
+  //TAlignment = (taRightJustify,taLeftJustify); // The same
+
 
   TSCrollButton = class(TSpeedButton)
   private
@@ -194,30 +230,129 @@ type
      property Font;
   end;
 
- const
-   ColorArr: array of string = (
-               'clBlack',
-               'clMaroon',
-               'clGreen',
-               'clOlive',
-               'clNavy',
-               'clPurple',
-               'clTeal',
-               'clGray',
-               'clSilver',
-               'clRed',
-               'clLime',
-               'clYellow',
-               'clBlue',
-               'clFuchsia',
-               'clAqua',
-               'clWhite',
-               'clMoneyGreen',
-               'clSkyBlue',
-               'clCream',
-               'clMedGray',
-               'clNone',
-               'clDefault');
+ TCheckBoxX = class(TCustomControl)
+ private
+   { Private declarations }
+   fChecked        : Boolean;
+   fCaption        : String;
+   fColor          : TColor;
+   fState          : TState;
+   fFont           : TFont;
+   fAllowGrayed    : Boolean;
+   fFocus          : Boolean;
+   fType           : TType;
+   fCheckColor     : TColor;
+   fMouseState     : TMouseState;
+   fAlignment      : TAlignment;
+   fTextTop        : Integer;  // top of text
+   fTextLeft       : Integer;  // left of text
+   fBoxTop         : Integer;  // top of box
+   fBoxLeft        : Integer;  // left of box
+   fOnStateChange  : TNotifyEvent;
+   fBitMap         : TbitMap;
+   Procedure fSetAlignment(A : TAlignment);
+   Procedure fSetAllowGrayed(Bo : Boolean);
+   Procedure fSetCaption(S : String);
+   Procedure fSetType(T : TType);
+   Procedure fSetCheckColor(C : TColor);
+   Procedure fSetChecked(Bo : Boolean);
+   Procedure fSetColor(C : TColor);
+   Procedure fSetFont(cbFont : TFont);
+   Procedure fSetState(cbState : TState);
+ protected
+   Procedure Paint; override;
+   Procedure MouseDown(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
+   Procedure MouseUp(Button: TMouseButton; Shift: TShiftState; X, Y: Integer); override;
+   Procedure WMKillFocus(var Message : TWMKillFocus); Message WM_KILLFOCUS; // Yes, this removes the focus rect!
+   Procedure WMSetFocus(var Message : TWMSetFocus); Message WM_SETFOCUS; // If you are using the TAB or  Shift-Tab key
+   Procedure KeyDown(var Key : Word; Shift : TShiftState); override;
+      // Interception of KeyDown
+    Procedure KeyUp(var Key : Word; Shift : TShiftState); override;
+      // Interception of KeyUp
+ public
+     { Public declarations }
+    // If you put Create and Destroy under protected,
+    // Delphi complains about that.
+    //Bitmap: TBitmap;
+    Constructor Create(AOwner : TComponent); override;
+    Destructor Destroy; override;
+ published
+    Property Action;
+    Property Alignment : TAlignment read fAlignment write fSetAlignment;
+    Property AllowGrayed : Boolean read fAllowGrayed write fSetAllowGrayed;
+    Property Anchors;
+    Property BiDiMode;
+    Property Caption : String read fCaption write fSetCaption;
+    Property CheckBoxType : TType read fType write fSetType;
+    Property CheckColor : TColor read fCheckColor write fsetCheckColor;
+    Property Checked : Boolean read fChecked write fSetChecked;
+    Property Color : TColor read fColor write fSetColor;
+    Property Constraints;
+    //Property Ctrl3D;
+    Property Cursor;
+    Property DragCursor;
+    Property DragKind;
+    Property DragMode;
+    Property Enabled;
+    Property Font : TFont read fFont write fSetFont;
+    //Property Height;
+    Property HelpContext;
+    Property Hint;
+    Property Left;
+    Property Name;
+    //Property PartenBiDiMode;
+    Property ParentColor;
+    //Property ParentCtrl3D;
+    Property ParentFont;
+    Property ParentShowHint;
+    //Property PopMenu;
+    Property ShowHint;
+    Property State : TState read fState write fSetState;
+    Property TabOrder;
+    Property TabStop;
+    Property Tag;
+    Property Top;
+    Property Visible;
+    //Property Width;
+    { --- Events --- }
+    Property OnClick;
+    Property OnContextPopup;
+    Property OnDragDrop;
+    Property OnDragOver;
+    Property OnEndDock;
+    Property OnEndDrag;
+    Property OnEnter;
+    Property OnExit;
+    Property OnKeyDown;
+    Property OnKeyPress;
+    Property OnKeyUp;
+    Property OnMouseDown;
+    Property OnMouseMove;
+    Property OnMouseUp;
+    Property OnStartDock;
+    Property OnStartDrag;
+    property OnStateChange: TNotifyEvent read FOnStateChange write FOnStateChange;
+    property Bitmap: TBitMap read fBitMap write fBitmap;
+ end;
+
+type
+  TTitlePanel = class(TPanel)
+  private
+  fBevelInner: TPanelBevel;
+  fBevelOuter: TPanelBevel;
+  fBorderstyle: TBorderStyle;
+  protected
+    Procedure Paint; override;
+  public
+    Constructor Create(AOwner: TComponent); override;
+
+  published
+    property BevelInner:  TPanelBevel read fBevelInner;
+    property BevelOuter: TPanelBevel read fBevelOuter;
+    property BorderStyle: TBorderstyle read fBorderstyle;
+  end;
+
+
 
 
 procedure Register;
@@ -230,7 +365,9 @@ begin
    RegisterComponents('lazbbComponents',[TSCrollButton]);
    RegisterComponents('lazbbComponents',[TScrollLabel]);
    RegisterComponents('lazbbComponents',[TColorPicker]);
-   // Hide some propertioes from
+   RegisterComponents('lazbbComponents',[TCheckBoxX]);
+   RegisterComponents('lazbbComponents',[TTitlePanel]);
+   // Hide some properties from
    {RegisterPropertyEditor(TypeInfo(Boolean), TColorPicker, 'Autosize', THiddenPropertyEditor); // Need IDEIntf packet }
 end;
 
@@ -714,7 +851,7 @@ var
   AStr:String;
 begin
   inherited;
-  {$I lazbbcolorbtn.lrs}
+
   Caption:= '';
   Width:= 128;
 
@@ -911,6 +1048,416 @@ begin
   if ColorDlg.Execute then
   SetColor(ColorDlg.Color);
 
+end;
+
+// TCheckbox color
+
+Destructor TCheckBoxX.Destroy;
+Begin
+inherited Destroy;
+fBitMap.Free;
+End;
+
+Constructor TCheckBoxX.Create(AOwner : TComponent);
+Begin
+inherited Create(AOwner);
+Height := 17;
+Width := 97;
+fChecked := False;
+fColor := cldefault;
+fState := cbUnChecked;
+fFont := inherited Font;
+fAllowGrayed := False;
+fFocus := False;
+fMouseState := msMouseUp;
+fAlignment := taRightJustify;
+TabStop := True; // Sorry
+fBitMap:= TBitmap.Create;
+fCaption:= 'CheckBoxX';
+End;
+
+Procedure TCheckBoxX.fSetAlignment(A : TAlignment);
+Begin
+If A <> fAlignment then
+   Begin
+   fAlignment := A;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.fSetAllowGrayed(Bo : Boolean);
+Begin
+If fAllowGrayed <> Bo then
+   Begin
+   fAllowGrayed := Bo;
+   If not fAllowGrayed then
+      If fState = cbGrayed then
+         Begin
+         If fChecked then
+            fState := cbChecked
+         else
+            fState := cbUnChecked;
+         End;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.fSetCaption(S : String);
+
+Begin
+//If fCaption <> S then
+   Begin
+   fCaption := S;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.fSetType(T : TType);
+Begin
+If fType <> T then
+   Begin
+   fType := T;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.fSetCheckColor(C : TColor);
+Begin
+If fCheckColor <> C then
+   Begin
+   fCheckColor := C;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.fSetChecked(Bo : Boolean);
+Begin
+If fChecked <> Bo then
+   Begin
+   fChecked := Bo;
+   If fState <> cbGrayed then
+      Begin
+      If fChecked then
+         fState := cbChecked
+      else
+         fState := cbUnChecked;
+      End;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.fSetColor(C : TColor);
+Begin
+If fColor <> C then
+   Begin
+   fColor := C;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.fSetFont(cbFont : TFont);
+Var
+   FntChanged : Boolean;
+Begin
+FntChanged := False;
+If fFont.Style <> cbFont.Style then
+   Begin
+   fFont.Style := cbFont.Style;
+   FntChanged := True;
+   End;
+If fFont.CharSet <> cbFont.Charset then
+   Begin
+   fFont.Charset := cbFont.Charset;
+   FntChanged := True;
+   End;
+If fFont.Size <> cbFont.Size then
+   Begin
+   fFont.Size := cbFont.Size;
+   FntChanged := True;
+   End;
+If fFont.Name <> cbFont.Name then
+   Begin
+   fFont.Name := cbFont.Name;
+   FntChanged := True;
+   End;
+If fFont.Color <> cbFont.Color then
+   Begin
+   fFont.Color := cbFont.Color;
+   FntChanged := True;
+   End;
+If FntChanged then
+   Invalidate;
+End;
+
+Procedure TCheckBoxX.fSetState(cbState : TState);
+Begin
+If fState <> cbState then
+   Begin
+   fState := cbState;
+   If (fState = cbChecked) then
+      fChecked := True;
+   If (fState = cbGrayed) then
+      fAllowGrayed := True;
+   If fState = cbUnChecked then
+      fChecked := False;
+   Invalidate;
+   End;
+End;
+
+Procedure TCheckBoxX.Paint;
+Var
+   Buffer                        : Array[0..127] of Char;
+   I                             : Integer;
+   fTextWidth,fTextHeight        : Integer;
+Begin
+  {Get component name and initially write it in the caption}
+  GetTextBuf(Buffer,SizeOf(Buffer));
+  If Buffer = '' then StrPCopy(Buffer, fCaption);
+  Canvas.Font.Size := Font.Size;
+  Canvas.Font.Style := Font.Style;
+  Canvas.Font.Color := Font.Color;
+  Canvas.Font.Charset := Font.CharSet;
+
+  fTextWidth := Canvas.TextWidth(fCaption);
+  fTextHeight := Canvas.TextHeight('Q');
+
+  If fAlignment = taRightJustify then
+  begin
+    fBoxTop := (Height - fRBoxHeight) div 2;
+    fBoxLeft := 0;
+    fTextTop := (Height - fTextHeight) div 2;
+    fTextLeft := fBoxLeft + fRBoxWidth + 4;
+  end else
+  begin
+    fBoxTop := (Height - fRBoxHeight) div 2;
+    fBoxLeft := Width - fRBoxWidth;
+    fTextTop := (Height - fTextHeight) div 2;
+    fTextLeft := 1;
+  end;
+
+  // Selected colors
+  Canvas.Pen.Color := fColor;
+  Canvas.Brush.Style:= bsClear;
+
+  If (fState = cbGrayed) or (enabled= false) then
+  Begin
+    fAllowGrayed := True;
+    Canvas.Font.color:= clGrayText;
+    Canvas.Pen.Color:= clGrayText;
+  End;
+  // Write caption
+  Canvas.TextOut(fTextLeft,fTextTop,fCaption);
+  // Now prepare the checkbox outline
+  Canvas.Brush.Style:= bsSolid;
+  If (fState = cbChecked) then Canvas.Brush.Color := clWindow;
+  If (fState = cbUnChecked) then Canvas.Brush.Color := clWindow;
+
+  // Make the box clBtnFace when the mouse is down
+  // just like the "standard" CheckBox
+  If fMouseState = msMouseDown then Canvas.Brush.Color := clBtnFace;
+  // Now fill the box brush with default blank colour
+  Canvas.FillRect(Rect(fBoxLeft + 1,
+                     fBoxTop + 1,
+                     fBoxLeft + fRBoxWidth - 1,
+                     fBoxTop + fRBoxHeight - 1));
+
+// Draw the rectangular checkbox  to be the same as Lazarus checkbox
+
+Canvas.rectangle(fBoxLeft, fBoxTop, fBoxLeft + fRBoxWidth,fBoxTop + fRBoxHeight );
+
+If fChecked then
+   Begin
+   Canvas.Pen.Color := fCheckColor; //clBlack;
+   Canvas.Brush.Color := fCheckColor; //clBlack;
+
+   // Paint the rectangle
+   If fType = cbRect then
+      Begin
+      Canvas.FillRect(Rect(fBoxLeft + 1,fBoxTop + 1,
+         fBoxLeft + fRBoxWidth - 1,fBoxTop + fRBoxHeight - 1));
+      End;
+
+   // Paint the bullet
+   If fType = cbBullet then
+      Begin
+      Canvas.Ellipse(fBoxLeft + 3,fBoxTop + 3,
+         fBoxLeft + fRBoxWidth - 3,fBoxTop + fRBoxHeight - 3);
+      End;
+
+   // Paint the cross
+   If fType = cbCross then
+      Begin
+      {Right-top to left-bottom}
+      Canvas.MoveTo(fBoxLeft + fRBoxWidth - 5,fBoxTop + 3);
+         Canvas.LineTo(fBoxLeft + 2,fBoxTop + fRBoxHeight - 4);
+      Canvas.MoveTo(fBoxLeft + fRBoxWidth - 4,fBoxTop + 3);
+         Canvas.LineTo(fBoxLeft + 2,fBoxTop + fRBoxHeight - 3);
+      Canvas.MoveTo(fBoxLeft + fRBoxWidth - 4,fBoxTop + 4);
+         Canvas.LineTo(fBoxLeft + 3,fBoxTop + fRBoxHeight - 3);
+      {Left-top to right-bottom}
+      Canvas.MoveTo(fBoxLeft + 3,fBoxTop + 4);
+         Canvas.LineTo(fBoxLeft + fRBoxWidth - 4,
+            fBoxTop + fRBoxHeight - 3);
+      Canvas.MoveTo(fBoxLeft + 3,fBoxTop + 3);
+         Canvas.LineTo(fBoxLeft + fRBoxWidth - 3,
+            fBoxTop + fRBoxHeight - 3);  //mid
+      Canvas.MoveTo(fBoxLeft + 4,fBoxTop + 3);
+         Canvas.LineTo(fBoxLeft + fRBoxWidth - 3,
+            fBoxTop + fRBoxHeight - 4);
+      End;
+
+   // Paint the mark
+   If fType = cbMark then
+      For I := 0 to 2 do
+         Begin
+         {Left-mid to left-bottom}
+         Canvas.MoveTo(fBoxLeft + 3,fBoxTop + 5 + I);
+         Canvas.LineTo(fBoxLeft + 6,fBoxTop + 8 + I);
+         {Left-bottom to right-top}
+         Canvas.MoveTo(fBoxLeft + 6,fBoxTop + 6 + I);
+         Canvas.LineTo(fBoxLeft + 10,fBoxTop + 2 + I);
+         End;
+
+   // Paint the diamond
+   If fType = cbDiamond then
+      Begin
+      Canvas.Pixels[fBoxLeft + 06,fBoxTop + 03] := clBlack;
+      Canvas.Pixels[fBoxLeft + 06,fBoxTop + 09] := clBlack;
+
+      Canvas.MoveTo(fBoxLeft + 05,fBoxTop + 04);
+      Canvas.LineTo(fBoxLeft + 08,fBoxTop + 04);
+
+      Canvas.MoveTo(fBoxLeft + 05,fBoxTop + 08);
+      Canvas.LineTo(fBoxLeft + 08,fBoxTop + 08);
+
+      Canvas.MoveTo(fBoxLeft + 04,fBoxTop + 05);
+      Canvas.LineTo(fBoxLeft + 09,fBoxTop + 05);
+
+      Canvas.MoveTo(fBoxLeft + 04,fBoxTop + 07);
+      Canvas.LineTo(fBoxLeft + 09,fBoxTop + 07);
+
+      Canvas.MoveTo(fBoxLeft + 03,fBoxTop + 06);
+      Canvas.LineTo(fBoxLeft + 10,fBoxTop + 06); // middle line
+      End;
+   // Paint the Bmp
+   if fType = cbBmp then
+   begin
+     if assigned(Bitmap)then
+     begin
+       Canvas.Draw(fBoxLeft + 1,fBoxTop + 1, Bitmap);
+     end;
+   end;
+   End;
+End;
+
+procedure TCheckBoxX.MouseDown(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+Begin
+// The MouseDown procedure is only called when the mouse
+// goes down WITHIN the control, so we don't have to check
+// the X and Y values.
+inherited MouseDown(Button, Shift, X, Y);
+fMouseState := msMouseDown;
+If fState <> cbGrayed then
+   Begin
+   SetFocus; // Set focus to this component
+             // Windows sends a WM_KILLFOCUS message to all the
+             // other components.
+   fFocus := True;
+   Invalidate;
+   End;
+End;
+
+procedure TCheckBoxX.MouseUp(Button: TMouseButton; Shift: TShiftState;
+  X, Y: Integer);
+Begin
+// The MouseUp procedure is only called when the mouse
+// goes up WITHIN the control, so we don't have to check
+// the X and Y values.
+inherited MouseUp(Button, Shift, X, Y);
+If fState <> cbGrayed then
+begin
+   fSetChecked(not fChecked); // Change the check
+   if Assigned(FOnStateChange) then FOnStateChange(Self);
+end;
+   fMouseState := msMouseUp;
+End;
+
+Procedure TCheckBoxX.KeyDown(var Key : Word; Shift : TShiftState);
+Begin
+If fFocus then
+   If Shift = [] then
+      If Key = 0032 then
+         Begin
+         fMouseState := msMouseDown;
+         If fState <> cbGrayed then
+            Begin
+            SetFocus; // Set focus to this component
+                      // Windows sends a WM_KILLFOCUS message to all the
+                      // other components.
+            fFocus := True;
+            Invalidate;
+            End;
+         End;
+Inherited KeyDown(Key,Shift);
+End;
+
+Procedure TCheckBoxX.KeyUp(var Key : Word; Shift : TShiftState);
+Begin
+If fFocus then
+   If Shift = [] then
+      If Key = 0032 then
+         Begin
+           If fState <> cbGrayed then
+           begin
+             fSetChecked(not fChecked); // Change the check
+             if Assigned(FOnStateChange) then FOnStateChange(Self);
+           end;
+           fMouseState := msMouseUp;
+         End;
+Inherited KeyUp(Key,Shift);
+End;
+
+Procedure TCheckBoxX.WMKillFocus(var Message : TWMKillFocus);
+Begin
+  fFocus := False; // Remove the focus rectangle of all the components,
+                 // which doesn't have the focus.
+  Invalidate;
+End;
+
+Procedure TCheckBoxX.WMSetFocus(var Message : TWMSetFocus);
+begin
+  fFocus := True;
+  Invalidate;
+End;
+
+constructor TTitlePanel.Create(AOwner: TComponent);
+begin
+  inherited Create(AOwner);
+  Parent:= TWinControl(aOwner);
+ // Alignment:= taLeftJustify;
+end;
+
+Procedure TTitlePanel.Paint;
+var
+  style: TTextStyle;
+  txth, txtw: integer;
+  lmrg: integer;
+begin
+  inherited Paint;
+  txth:= Canvas.TextHeight(caption);
+  txtw:= Canvas.TextWidth(caption);
+  lmrg:= 15;
+  Case Alignment of
+   taCenter: lmrg:= (width-txtw) div 2;
+   taLeftJustify: lmrg:= 15;
+   taRightJustify: lmrg:= width-txtw-15;
+  end;
+  Style.Opaque := True;
+  Canvas.FillRect(Rect(0,0,width,height));
+  Canvas.Pen.color:= BevelColor ;
+  Canvas.Rectangle(0, 8, width, height);
+  Canvas.TextRect(Rect(lmrg, 0, txtw+lmrg, txth), lmrg ,0,caption, Style);
 end;
 
 end.

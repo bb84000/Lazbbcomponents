@@ -37,9 +37,17 @@ TcolorPicker
   Comme avec la combo box de base, la hauteur du composant dépend de la hauteur des items.
   Le dialogue de couleurs est localisé par le système d'exploitation.
 
-
   Color : Couleur initiale
   MnuCopyCaption, MnuPasteCaption : permettent la localisation du popup.
+
+
+TCheckBoxX
+  Case à cocher multifonctions : carré coloré, croix, coche, image.
+
+TitlePanel
+  Panel ayant un titre comme une GroupBox. Couleur de bordure pouvant être changée
+ 
+
 
 Utilisation libre.
 			
@@ -82,6 +90,13 @@ TcolorPicker
   Color (TColor): Initial color
   MnuCopyCaption, MnuPasteCaption (String): allow popup localization
 
+TCheckBoxX
+  Multifunction checkbox : clour square, cross, check, image.
+
+TitlePanel
+  Panel with a titl like a GroupBox. Can change border color and title alignment
+
+ 
 Free use.
 
-bb - sdtp - december 2020
+bb - sdtp - april 2021
