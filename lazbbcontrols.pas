@@ -1445,6 +1445,8 @@ var
   lmrg: integer;
 begin
   inherited Paint;
+  Canvas.Font:= Font;
+  Canvas.Font.Style:= Font.Style;
   txth:= Canvas.TextHeight(caption);
   txtw:= Canvas.TextWidth(caption);
   lmrg:= 15;
@@ -1454,9 +1456,11 @@ begin
    taRightJustify: lmrg:= width-txtw-15;
   end;
   Style.Opaque := True;
+  Style.SystemFont:= false;
   Canvas.FillRect(Rect(0,0,width,height));
   Canvas.Pen.color:= BevelColor ;
   Canvas.Rectangle(0, 8, width, height);
+  //Canvas.TextOut(lmrg,0);
   Canvas.TextRect(Rect(lmrg, 0, txtw+lmrg, txth), lmrg ,0,caption, Style);
 end;
 
