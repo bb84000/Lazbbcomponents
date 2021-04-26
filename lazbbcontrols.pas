@@ -26,7 +26,7 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics,
-  Dialogs, Buttons, Menus, Clipbrd, PropEdits, Messages;
+  Dialogs, Buttons, Menus, Clipbrd, PropEdits, Messages, LCLIntf;
 
 Const
   ColorArr: array of string = (
@@ -230,11 +230,12 @@ type
      property Font;
   end;
 
+
  TCheckBoxX = class(TCustomControl)
  private
    { Private declarations }
    fChecked        : Boolean;
-   fCaption        : String;
+   fCaption       : String;
    fColor          : TColor;
    fState          : TState;
    fFont           : TFont;
@@ -282,7 +283,7 @@ type
     Property AllowGrayed : Boolean read fAllowGrayed write fSetAllowGrayed;
     Property Anchors;
     Property BiDiMode;
-    Property Caption : String read fCaption write fSetCaption;
+    Property Caption: String read fCaption write fSetCaption;
     Property CheckBoxType : TType read fType write fSetType;
     Property CheckColor : TColor read fCheckColor write fsetCheckColor;
     Property Checked : Boolean read fChecked write fSetChecked;
@@ -336,20 +337,78 @@ type
  end;
 
 type
-  TTitlePanel = class(TPanel)
+  TTitlePanel = class(TCustomPanel)
   private
-  fBevelInner: TPanelBevel;
-  fBevelOuter: TPanelBevel;
-  fBorderstyle: TBorderStyle;
+    fBorderLine: TBorderStyle;
+    fBorderColor: TColor;
+    procedure setBorderLine(bl: TBorderStyle);
+    procedure SetBorderColor(bc: TColor);
   protected
     Procedure Paint; override;
+
   public
     Constructor Create(AOwner: TComponent); override;
 
   published
-    property BevelInner:  TPanelBevel read fBevelInner;
-    property BevelOuter: TPanelBevel read fBevelOuter;
-    property BorderStyle: TBorderstyle read fBorderstyle;
+    property Align;
+    property Alignment;
+    property Anchors;
+    property BorderLine: TBorderStyle read fBorderLine write setBorderLine;
+    property BorderColor: TColor read fBorderColor write setBorderColor;
+    property Caption;
+    property ChildSizing;
+    property ClientHeight;
+    property ClientWidth;
+    property Color;
+    property Constraints;
+    property DockSite;
+    property DoubleBuffered;
+    property DragCursor;
+    property DragKind;
+    property DragMode;
+    property Enabled;
+    property Font;
+    property FullRepaint;
+    property ParentBackground;
+    property ParentBidiMode;
+    property ParentColor;
+    property ParentDoubleBuffered;
+    property ParentFont;
+    property ParentShowHint;
+    property PopupMenu;
+    property ShowHint;
+    property TabOrder;
+    property TabStop;
+    property UseDockManager default True;
+    property Visible;
+    property Wordwrap;
+    property OnClick;
+    property OnContextPopup;
+    property OnDockDrop;
+    property OnDockOver;
+    property OnDblClick;
+    property OnDragDrop;
+    property OnDragOver;
+    property OnEndDock;
+    property OnEndDrag;
+    property OnEnter;
+    property OnExit;
+    property OnGetSiteInfo;
+    property OnGetDockCaption;
+    property OnMouseDown;
+    property OnMouseEnter;
+    property OnMouseLeave;
+    property OnMouseMove;
+    property OnMouseUp;
+    property OnMouseWheel;
+    property OnMouseWheelDown;
+    property OnMouseWheelUp;
+    property OnPaint;
+    property OnResize;
+    property OnStartDock;
+    property OnStartDrag;
+    property OnUnDock;
+
   end;
 
 
@@ -850,6 +909,7 @@ constructor TColorPicker.Create(AOwner: TComponent);
 var
   AStr:String;
 begin
+  {$I lazbbcontrols_icon.lrs}
   inherited;
 
   Caption:= '';
@@ -872,6 +932,7 @@ begin
   ColorCombo.BorderStyle:= bsNone;
   ColorCombo.visible:= true;
   ColorCombo.Items:= TstringList.Create;
+  ParentFont:= false;
   ColorCombo.Font:= Font;
   for AStr in ColorArr do ColorCombo.Items.Add (AStr);
   ColorCombo.ItemIndex:= ColorCombo.Items.Count-1;
@@ -1025,6 +1086,7 @@ var
   ColTop: Integer;
   flRect: TRect;
 begin
+  ColorCombo.Canvas.Font:= font;
   ColorCombo.Canvas.FillRect(ARect);                                                              //first paint normal background
   txtTop:= (ARect.Bottom-ARect.Top-ColorCombo.Canvas.TextHeight(ColorCombo.Items[Index])) div 2;  // To vertically center text
   ColTop:= (ARect.Bottom-ARect.Top-13) div 2;                                                     // Vertically center color square
@@ -1059,8 +1121,11 @@ fBitMap.Free;
 End;
 
 Constructor TCheckBoxX.Create(AOwner : TComponent);
+var
+  s: String;
 Begin
-inherited Create(AOwner);
+  inherited Create(AOwner);
+Parent:= TWinControl(aOwner);
 Height := 17;
 Width := 97;
 fChecked := False;
@@ -1073,7 +1138,7 @@ fMouseState := msMouseUp;
 fAlignment := taRightJustify;
 TabStop := True; // Sorry
 fBitMap:= TBitmap.Create;
-fCaption:= 'CheckBoxX';
+fCaption:= 'ChecBoxX';
 End;
 
 Procedure TCheckBoxX.fSetAlignment(A : TAlignment);
@@ -1105,7 +1170,7 @@ End;
 Procedure TCheckBoxX.fSetCaption(S : String);
 
 Begin
-//If fCaption <> S then
+If fCaption <> S then
    Begin
    fCaption := S;
    Invalidate;
@@ -1210,15 +1275,12 @@ Var
    I                             : Integer;
    fTextWidth,fTextHeight        : Integer;
 Begin
-  {Get component name and initially write it in the caption}
-  GetTextBuf(Buffer,SizeOf(Buffer));
-  If Buffer = '' then StrPCopy(Buffer, fCaption);
   Canvas.Font.Size := Font.Size;
   Canvas.Font.Style := Font.Style;
   Canvas.Font.Color := Font.Color;
   Canvas.Font.Charset := Font.CharSet;
 
-  fTextWidth := Canvas.TextWidth(fCaption);
+  fTextWidth := Canvas.TextWidth(Caption);
   fTextHeight := Canvas.TextHeight('Q');
 
   If fAlignment = taRightJustify then
@@ -1246,7 +1308,7 @@ Begin
     Canvas.Pen.Color:= clGrayText;
   End;
   // Write caption
-  Canvas.TextOut(fTextLeft,fTextTop,fCaption);
+  Canvas.TextOut(fTextLeft,fTextTop,Caption);
   // Now prepare the checkbox outline
   Canvas.Brush.Style:= bsSolid;
   If (fState = cbChecked) then Canvas.Brush.Color := clWindow;
@@ -1435,7 +1497,27 @@ constructor TTitlePanel.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   Parent:= TWinControl(aOwner);
- // Alignment:= taLeftJustify;
+  fBorderLine:= bsSingle;
+  Alignment:= taLeftJustify;
+  FBorderColor:= clActiveBorder;
+end;
+
+procedure  TTitlePanel.setBorderLine(bl: TBorderStyle);
+begin
+  if bl <> fBorderLine then
+  begin
+    fBorderLine:= bl;
+    Invalidate;
+  end;
+end;
+
+procedure  TTitlePanel.SetBorderColor(bc: TColor);
+begin
+  if bc <> fBorderColor then
+  begin
+    fBorderColor:= bc;
+    Invalidate;
+  end;
 end;
 
 Procedure TTitlePanel.Paint;
@@ -1444,8 +1526,9 @@ var
   txth, txtw: integer;
   lmrg: integer;
 begin
-  inherited Paint;
+  Canvas.Region.ClipRect;
   Canvas.Font:= Font;
+  Style.SystemFont:= false;
   Canvas.Font.Style:= Font.Style;
   txth:= Canvas.TextHeight(caption);
   txtw:= Canvas.TextWidth(caption);
@@ -1455,13 +1538,29 @@ begin
    taLeftJustify: lmrg:= 15;
    taRightJustify: lmrg:= width-txtw-15;
   end;
+  // Remove background color on the full panel
+  // replace with the parent/owner color
+  Canvas.Brush.Color:= TWinControl(Parent).Color;
+  Canvas.FillRect(Rect(0, 0, width, height));
+  // Fill color on the used surface
+  Canvas.Brush.Color:= Color;
+  Canvas.FillRect(Rect(0, 8, width, height));
   Style.Opaque := True;
-  Style.SystemFont:= false;
-  Canvas.FillRect(Rect(0,0,width,height));
-  Canvas.Pen.color:= BevelColor ;
-  Canvas.Rectangle(0, 8, width, height);
-  //Canvas.TextOut(lmrg,0);
+
+  //Top border with place for caption
+  if BorderLine=bsSingle then
+  begin
+    Canvas.Pen.Color:= fBorderColor;
+    Canvas.Line(0,8,lmrg,8);
+    Canvas.Line(lmrg+txtw,8,width,8);
+    Canvas.Line(width-1,8,width-1,height);
+    Canvas.Line(0, height-1, width-1,height-1);
+    Canvas.Line(0,8,0,height);
+  end;
+  Canvas.Brush.Style:= bsClear;
+
   Canvas.TextRect(Rect(lmrg, 0, txtw+lmrg, txth), lmrg ,0,caption, Style);
+
 end;
 
 end.
