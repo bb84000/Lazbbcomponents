@@ -15,7 +15,6 @@ implementation
 procedure Register;
 begin
   RegisterUnit('lazbbcontrols', @lazbbcontrols.Register);
- 
 end;
 
 initialization
