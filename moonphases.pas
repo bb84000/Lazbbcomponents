@@ -8,6 +8,8 @@ uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs;
 
 type
+
+
   TMoonRecord = record
     MDays: TDateTime;
     MType: string;
@@ -19,17 +21,28 @@ type
   private
     fversion: String;
     fMoondays: TMoonDays;
+    fMoonyear: Integer;
     fMoondate: TDateTime;
+    //fMoonType: String;
+    fready: Boolean;
+    procedure Get_MoonDays;
+    procedure setMoonDate(value: TDateTime);
+    procedure setMoonYear(value: Integer);
   protected
 
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
-    property Moondate: TDateTime read fMoondate;
-    property Moondays: TMoonDays read fMoondays;
+    function isMoon:  TMoonRecord;
+    property Moondate: TDateTime read fMoondate write SetMoondate;
+    property Moondays: TMoonDays read fMoonDays;
   published
+    property Moonyear: Integer read fMoonyear write setMoonYear;
 
   end;
+
+  const
+    InvalidDate= -693593; // 1st january 0001
 
 procedure Register;
 
@@ -45,7 +58,7 @@ constructor TMoonphases.Create(AOwner: TComponent);
 begin
   inherited Create(AOwner);
   fVersion:= '1.0';
-
+  fReady:= false;
 end;
 
 
@@ -54,7 +67,24 @@ begin
   inherited Destroy;
 end;
 
-function Get_MoonDays(gDate: TDateTime): TMoonDays;
+procedure TMoonphases.setMoonDate(value: TDateTime);
+begin
+  if fMoonDate<>value then
+  begin
+    fMoonDate:= value;
+  end;
+end;
+
+procedure TMoonphases.setMoonYear(value: Integer);
+begin
+  if fMoonYear<>value then
+  begin
+    fMoonYear:= value;
+    Get_MoonDays;
+  end;
+end;
+
+procedure TMoonphases.Get_MoonDays;
 // const du jour julien du 01-01-2000 à 12h TU
 // ou 0h GMT 01-01-2000 12:00:00 TU 2451545 JJ
 // const JJ2000 = 2451545;
@@ -66,11 +96,16 @@ var
   CptLMax, CptL, PentPhL, PentPhMoyL, PfracPhMoyL, Alpha, B, C, D, E: single;
   LunAn, LunMs, JrLun, JrLunFrac, TotHeu, TotMin, TotSec: single;
   ListDatLun: array[1..56] of string;
+  //ListHeuLun: array[1..56] of string;
   gNbrLune: array[1..56] of byte;
   AnBis,  Found : boolean;
 
 begin
-{  DecodeDate(gDate, AnPh, MoPh, AJour);
+  //DecodeDate(fMoondate, AnPh, MoPh, AJour);
+  //if AnPh=fMoonYear then exit;
+  AnPh:= fMoonYear;
+  MoPh:= 1;
+  Ajour:= 25;
   gLunes:= 0;
   AJour:= 1;  // AJour = 1 pour éviter AJour + 3 > 31
   if MoPh = 0 then begin MoPh:= 12; AnPh:= AnPh - 1; end;
@@ -283,7 +318,7 @@ begin
       gLunes:= gLunes + 1;
       ListDatLun[gLunes]:= TDatL;
       //ListHeuLun[gLunes]:= THorL;
-      MoonDays[gLunes].MDays:= EncodeDate(LunAnW,LunMsW,JrLunEntW)+EncodeTime(HrLun,MnLun,0,0);// date de lune
+      fMoonDays[gLunes].MDays:= EncodeDate(LunAnW,LunMsW,JrLunEntW)+EncodeTime(HrLun,MnLun,0,0);// date de lune
       //MoonDays[gLunes].MTime:= EncodeTime(HrLun,MnLun,0,0);        // horaire de lune
       gNbrLune[gLunes]:= tLune;
     end; // else exit;
@@ -297,10 +332,23 @@ begin
         39: TxtL:= 'NL';   //40:   '5
         41: TxtL:= 'PQ';   //42:   '7
       end;
-      MoonDays[J].MType:= TxtL; // type de lune
+      fMoonDays[J].MType:= TxtL; // type de lune
     end;
-  //end;
-  result:= MoonDays;   }
+  fready:= true;
 end;
+
+// GetMoonday doit avoir été lancé !!!
+// Retrouve le jour fMoonDate
+function TMoonphases.isMoon: TMoonRecord;
+var
+  i: integer;
+begin
+  result.MDays:= InvalidDate;
+  result.MType:= '';
+  if not fready then exit;
+  for i:= 1 to 56 do
+    if fMoondate = Trunc (fMoonDays[i].MDays) then result:= fMoonDays[i];
+end;
+
 
 end.

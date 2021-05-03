@@ -39,7 +39,6 @@ type
     fSunrise: TDateTime;
     fSunset: TDateTime;
     fSunNoon: TDateTime;
-    fReady: Boolean;
     fTypeSun: TSunrise;
     fOnchange: TNotifyEvent;
     procedure ParametersChanged(Sender: TObject);
@@ -47,7 +46,6 @@ type
     procedure SetSundate(Value: TDateTime);
     procedure SetTimeZone(Value: Double);
     procedure SetDST(Value: Double);
-    function GetSunnoon: TDateTime;
     procedure SetLatitude(Value: Double);
     procedure SetLongitude(Value: Double);
     procedure SetAltitude(Value: Integer);
@@ -74,9 +72,9 @@ type
     destructor Destroy; override;
     property Version: String read fVersion;
 
-    property Sunrise: TDateTime index 0 read calcSunrise;
-    property Sunset: TDateTime index 1 read calcSunrise;
-    property SunNoon: TDateTime read GetSunnoon;
+    property Sunrise: TDateTime read fSunrise;//calcSunrise;
+    property Sunset: TDateTime read fSunset;
+    property SunNoon: TDateTime read fSunNoon;
 
   published
     property Sundate: TDateTime read fSundate write SetSundate;
@@ -117,7 +115,6 @@ begin
  if fTypeSun <> Value then
  begin
    fTypeSun:= Value;
-   if Assigned(fOnchange) then FOnChange(Self);
    ParametersChanged(nil);
  end;
 end;
@@ -127,24 +124,7 @@ begin
   if fsundate <> Value then
   begin
     fSundate := Value;
-    if Assigned(FOnChange) then FOnChange(Self);
     ParametersChanged(nil);
-  end;
-end;
-
-
-function TSuntime.GetSunnoon: TDateTime;
-var
-  longit, JD, t, noonmin: Double;
-begin
-  if not fReady then
-  begin
-    // longitudes are inversed (east negative)
-    longit:= -fLongitude;
-    JD:= DateTimeToJulianDate(fSundate);
-    t:= calcTimeJulianCent(JD);
-    noonmin:= calcSolNoonUTC(t, longit);      // Find the time of solar noon at the location
-    result:= UTCMinutesToUTCTime(noonmin)+(fTimeZone+fDST)/24;   // update noon value
   end;
 end;
 
@@ -154,7 +134,6 @@ begin
   begin
     fTimeZone := Value;
     ParametersChanged(nil);
-    if Assigned(FOnChange) then FOnChange(Self);
   end;
 end;
 
@@ -164,7 +143,6 @@ begin
   begin
     fDST := Value;
     ParametersChanged(nil);
-    if Assigned(FOnChange) then FOnChange(Self);
   end;
 end;
 
@@ -174,7 +152,6 @@ begin
   begin
     fLatitude:= Value;
     ParametersChanged(nil);
-    if Assigned(FOnChange) then FOnChange(Self);
   end;
 end;
 
@@ -184,7 +161,6 @@ begin
   begin
     fLongitude:= Value;
     ParametersChanged(nil);
-    if Assigned(FOnChange) then FOnChange(Self);
   end;
 end;
 
@@ -194,20 +170,22 @@ begin
   begin
     fAltitude:= Value;
     ParametersChanged(nil);
-    if Assigned(FOnChange) then FOnChange(Self);
   end;
 end;
 
 
 procedure TSuntime.ParametersChanged(Sender: TObject);
 begin
-  fReady := False;
+  fSunrise:= calcSunrise(0);
+  fSunset:= calcSunrise(1);
+  fSunNoon:= calcSunrise(2);
+  if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 
 //***********************************************************************/
 // calcSunrise  : calculate the local time of sunrise/sunset
-// index 0 sunrise else sunset
+// index 0 sunrise, 1 sunset and 2 noon
 // Return value: local time
 //***********************************************************************/
 
@@ -220,16 +198,20 @@ var
   hr, mn, y, m, d : Integer;
   longit: Double;
 begin
-  if fReady then  exit;  // No need to recompute
-  // check if sunrise or sunset
-  if index= 0 then r:= 1 else r:= -1;
   // longitudes are inversed (east negative)
   longit:= -1*flongitude;
   JD:= DateTimeToJulianDate(fSundate);
   t:= calcTimeJulianCent(JD);
   noonmin:= calcSolNoonUTC(t, longit);      // Find the time of solar noon at the location
+  if index=2 then
+  begin
+    result:= UTCMinutesToUTCTime(noonmin)+(fTimeZone+fDST)/24;   // update noon value
+    exit;
+  end;
   tnoon:= calcTimeJulianCent (JD+noonmin/1440.0);
   // *** First pass to approximate sunrise or sunset (using solar noon)
+  // check if sunrise or sunset
+  if index= 0 then r:= 1 else r:= -1;
   eqTime:= calcEquationOfTime(tnoon);
   solarDec:= calcSunDeclination(tnoon);
   hourAngle:= calcHourAngleSunrise(flatitude, solarDec, fTypeSun)*r;
