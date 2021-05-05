@@ -10,8 +10,8 @@ __TitlePanel__ : A panel with groupbos like title. Title can be centered or left
 
 # LazbbAstroComponents packet for Lazarus
 
-## __TSuntime__ : Give sunrise, sunset and noon time for a selected day<br>
-## __TMoonphases__ : Give moon phases for a selected year
+__TSuntime__ : Give sunrise, sunset and noon time for a selected day<br>
+__TMoonphases__ : Give moon phases for a selected year
 
 Please see Wiki pages for more details;
 
