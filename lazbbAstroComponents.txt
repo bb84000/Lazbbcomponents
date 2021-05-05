@@ -1,0 +1,79 @@
+Paquet LazbbAstroComponents
+
+English description follows the french one
+
+TSuntime : Fournit les heures de lever, de zénith et de coucher du soleil pour une date donnée.
+TMoonphases : Fournit les phases de la lune, avec les heures d'apparition
+
+TSuntime
+   Sundate (TDateTime) : Jour choisi
+   TimeZone (Double) : Décalage horaire en heures
+   DST (Double) : Heure d'été (0: non, 1: oui);
+   Latitude (Double) : Latitude en degrés décimaux (N : positive, S : négative)
+   Longitude (Double) : Longitude en degrés décimaux (E : positive, W : négative)
+   Altitude (Integer) : Non encore implémenté
+   TypeSun (TSunrise) : Type de lever/coucher : standard, civil, nautic ou astro
+   --------
+   Sunrise (TDateTime) : heure de lever du soleil à la date choisie (Sundate)
+   Sunset (TDateTime) : Heure de coucher du soleil
+   SunNoon (TDateTime) : Heure du soleil au zénith
+
+
+TMoonphases
+   Moonyear (Integer) : Année choisie pour les phases de la lune
+   Moondate (TDateTime) : Date choisie pour la fonction isMoon
+   isMoon (TMoonRecord) : Y a-t-il une phase de la lune le jour Moondate
+   TMoonRecord.
+     MDays (TDateTime) : Date de la lunaison ou InvalidDate (01/01/0001) si pas de lunaison
+     MType (String) : Noms en anglais : New Moon, Waxing crescent, First quarter, Waxing gibbous),
+                      Full moon, Waning gibbous, third/last quarter, Waning crescent
+     MIndex (Integer) : 0 (NL) à 7 (DC) Utile pour accéder à MoonImages et/ou personnaliser
+
+   -----
+   Crescent (Boolean) : True, la liste comporte 8 phases and compte 112 dates et heures
+                        False, la liste comporte 4 phases et compte 56 dates et heures
+   Moondays (TMoonDays) : Array de 56 ou 112 TMoonRecords contenant les lunaisons de l'année Moonyear
+   MoonImages (TImageList): Liste de 8 images de lune dans l'ordre indiqué à la valeur MType
+
+Utilisation libre.
+			
+*************************************************************************************
+
+LazbbAstroComponents packet
+
+
+TSuntime : Provides sunrise, sunset and noon times for a selected date
+TMoonphases : Provides moon phases array for a selected year
+
+TSuntime
+   Sundate (TDateTime) : Selected day
+   TimeZone (Double) : Time offset in hours
+   DST (Double) : Daylight saving time (0: no, 1: yes);
+   Latitude (Double) : Latitude in decimal degrees (N : positive, S : negative)
+   Longitude (Double) : Longitude in decimal degrees (E : positive, W : negative)
+   Altitude (Integer) : Not yet implemented
+   TypeSun (TSunrise) : Sunrise/sunset type: standard, civil, nautic ou astro
+   --------
+   Sunrise (TDateTime) : Sunrise at the selected date (Sundate)
+   Sunset (TDateTime) : Sunset
+   SunNoon (TDateTime) : Noon
+
+
+TMoonphases
+   Moonyear (Integer) : Selected year for moon phases
+   Moondate (TDateTime) : Selected date for the function isMoon
+   isMoon (TMoonRecord) : Is there a moon phase on the day Moondate
+   TMoonRecord
+      MDays (TDateTime) : Moonphase date and hour, or InvalidDate (01/01/0001) if not found
+      MType (String) : New Moon, Waxing crescent, First quarter, Waxing gibbous,
+                      Full moon, Waning gibbous, third/last quarter, Waning crescent
+      MIndex (Integer) : 0 (NM) to 7 (WC) Useful to acces MoonImages and/or customize application
+   -----
+   Crescent (Boolean) : True, the list has 8 phases and has 112 dates and hours
+                        False, the list has 4 phases and has 56 date and hours
+   Moondays (TMoonDays) : Array of 56 or 112 TMoonRecords containing moon phases for the year Moonyear
+   MoonImages (TImageList): List of 8 moon images in the order shown on MType value
+
+Free use.
+
+bb - sdtp - may 2021

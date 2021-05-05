@@ -1,3 +1,27 @@
+//******************************************************************************
+// Moonphases unit : compute moon phases times
+// original author : alantell - november 2004 from astronomy books
+// Lazarus adaptation and improvements : bb - sdtp - May 2021
+//
+// Parameters:
+//   Moonyear (Integer) : Selected year for moon phases
+//   Moondate (TDateTime) : Selected date for the function isMoon
+// Properties
+//   isMoon (TMoonRecord) : Is there a moon phase on the day Moondate
+//   Crescent (Boolean) : True, the list has 8 phases and has 112 dates and hours
+//                        False, the list has 4 phases and has 56 date and hours
+//   Moondays (TMoonDays) : Array of 56 TMoonRecords containing moon pahses for the year Moonyear
+//   MoonImages (TImageList): List of 8 moon images relative to MIndex value
+// Type
+//   TMoonRecord
+//     MDays (TDateTime) : Moonphase date and hour, or InvalidDate (01/01/0001) if not found
+//     MType (String) : New Moon, Waxing crescent, First quarter, Waxing gibbous,
+//                      Full moon, Waning gibbous, third/last quarter, Waning crescent
+//    MIndex (Integer) : 0 (NM) to 7 (WC) Useful to acces MoonImages and/or customize application
+//**************************************************************************************************
+
+
+
 unit Moonphases;
 
 {$mode objfpc}{$H+}
@@ -9,13 +33,13 @@ uses
 
 type
 
-
   TMoonRecord = record
     MDays: TDateTime;
     MType: string;
+    MIndex: Integer;
   end;
 
-  TMoonDays = array[1..56] of TMoonRecord;
+  TMoonDays = array of TMoonRecord;
 
   TMoonphases = class(TComponent)
   private
@@ -23,11 +47,13 @@ type
     fMoondays: TMoonDays;
     fMoonyear: Integer;
     fMoondate: TDateTime;
-    //fMoonType: String;
+    fCrescents: Boolean;
     fready: Boolean;
+    fMoonImages: TImageList;
     procedure Get_MoonDays;
     procedure setMoonDate(value: TDateTime);
     procedure setMoonYear(value: Integer);
+    procedure SetCrescents(value: Boolean);
   protected
 
   public
@@ -36,9 +62,10 @@ type
     function isMoon:  TMoonRecord;
     property Moondate: TDateTime read fMoondate write SetMoondate;
     property Moondays: TMoonDays read fMoonDays;
+    property MoonImages: TImageList read fMoonImages; // write setMoonImages;
   published
     property Moonyear: Integer read fMoonyear write setMoonYear;
-
+    property Crescents: Boolean read FCrescents write SetCrescents;
   end;
 
   const
@@ -50,14 +77,25 @@ implementation
 
 procedure Register;
 begin
-  {$I moonphases_icon.lrs}
+  {$I moonphases.lrs}
   RegisterComponents('lazbbAstroComponents',[TMoonphases]);
 end;
 
 constructor TMoonphases.Create(AOwner: TComponent);
+const
+  simgArr: array of String = ('new_moon', 'waxing_crescent', 'first_quarter', 'waxing_gibbous', 'full_moon', 'waning_gibbous', 'last_quarter', 'waning_crescent');
+var
+  i: Integer;
 begin
   inherited Create(AOwner);
+  {$I moonphases.lrs}
   fVersion:= '1.0';
+  fMoonYear:= CurrentYear;
+  fMoonImages:= TimageList.Create(self);
+  fMoonImages.Height:= 44;
+  fMoonImages.Width:= 44;
+  For i:= 0 to 7 do
+    fmoonImages.AddLazarusResource(simgArr[i]);
   fReady:= false;
 end;
 
@@ -80,8 +118,15 @@ begin
   if fMoonYear<>value then
   begin
     fMoonYear:= value;
-    Get_MoonDays;
+    if not (csDesigning in ComponentState) then Get_MoonDays;
   end;
+end;
+
+procedure TMoonphases.SetCrescents(value: Boolean);
+begin
+  if fCrescents<> value then
+  fCrescents:= value;
+  if not (csDesigning in ComponentState) then Get_MoonDays;
 end;
 
 procedure TMoonphases.Get_MoonDays;
@@ -89,26 +134,37 @@ procedure TMoonphases.Get_MoonDays;
 // ou 0h GMT 01-01-2000 12:00:00 TU 2451545 JJ
 // const JJ2000 = 2451545;
 var
-  TUJrLun: TDateTime; K, TT: integer; TDatL, TxtL, THorL: string;
+  TDatL, TxtL: string;
   AnDecim, T, T2, T3, Rd, AMSol, AMLun, LatLune, PhMoyL: double;
-  NoLune, tLune, J, gLunes, PhLun, CurM, CurM2, HrLun, MnLun: byte;
+  NoLune, tLune, J, gLunes, PhLun, HrLun, MnLun: byte;
   AnPh, MoPh, AJour, LunAnW, LunMsW, JrLunEntW: word;
   CptLMax, CptL, PentPhL, PentPhMoyL, PfracPhMoyL, Alpha, B, C, D, E: single;
   LunAn, LunMs, JrLun, JrLunFrac, TotHeu, TotMin, TotSec: single;
-  ListDatLun: array[1..56] of string;
+  ListDatLun: array of string;
   //ListHeuLun: array[1..56] of string;
-  gNbrLune: array[1..56] of byte;
+  gNbrLune: array of byte;
   AnBis,  Found : boolean;
-
+  NumDays: Integer;
+  interval: Double;
+  ndx: Integer;
 begin
-  //DecodeDate(fMoondate, AnPh, MoPh, AJour);
-  //if AnPh=fMoonYear then exit;
-  AnPh:= fMoonYear;
-  MoPh:= 1;
-  Ajour:= 25;
+  // Avoid trouble on the beginning of year, substreact some days
+  AnPh:= fMoonYear-1;
+  MoPh:= 12;
+  Ajour:= 1;   // avoid error in february when using ajour+3
   gLunes:= 0;
-  AJour:= 1;  // AJour = 1 pour éviter AJour + 3 > 31
-  if MoPh = 0 then begin MoPh:= 12; AnPh:= AnPh - 1; end;
+  if fCrescents then
+  begin
+    Numdays:= 112;
+    interval:= 0.125;
+  end else
+  begin
+    numdays:= 56;
+    interval:= 0.250;
+  end;
+  SetLength(fMoondays, Numdays);
+  SetLength(ListDatLun, Numdays);
+  SetLength(gNbrLune, NumDays);
   CptLMax:= 14; // définit le nb phase de lune ex: 13 lunes => 56 phases
   // valeur année décimale par mois si année bissextile ou pas
   AnBis:= ((AnPh Mod 4)= 0);    // si = 0 année bissextile
@@ -218,7 +274,6 @@ begin
     PhMoyL:= PhMoyL + 0.5;
     PentPhMoyL:= Trunc(PhMoyL);
     PfracPhMoyL:= frac(PhMoyL);
-
     if PentPhMoyL <  2299161 then PentPhL:= PentPhMoyL
     else
     begin
@@ -245,19 +300,19 @@ begin
     TotMin:= frac(TotHeu) * 60;
     MnLun:= Trunc(TotMin);
     // horaire de la lune
-    TUJrLun:= EncodeTime(HrLun, MnLun, 0, 0);
+    //TUJrLun:= EncodeTime(HrLun, MnLun, 0, 0);
     //THorL:= FormatDateTime('hh"h "mm',TUJrLun);
     PhLun:= 0;
     if CptL >= 0 then
     begin
-      if frac(CptL) =  0.0   then PhLun:= 6;// NL
-      if frac(CptL) =  0.125 then PhLun:= 5;
-      if frac(CptL) =  0.25  then PhLun:= 4;// DQ
-      if frac(CptL) =  0.375 then PhLun:= 3;
-      if frac(CptL) =  0.5   then PhLun:= 2;// PL
-      if frac(CptL) =  0.625 then PhLun:= 1;
-      if frac(CptL) =  0.75  then PhLun:= 8;// PQ
-      if frac(CptL) =  0.875 then PhLun:= 7;
+      if frac(CptL) =  0.0   then PhLun:= 6;  // NL  Nouvelle lune
+      if frac(CptL) =  0.125 then PhLun:= 5;  // DC  Dernier croissant
+      if frac(CptL) =  0.25  then PhLun:= 4;  // DQ  Dernier quartier
+      if frac(CptL) =  0.375 then PhLun:= 3;  // GD  Gibbeuse décroissante
+      if frac(CptL) =  0.5   then PhLun:= 2;  // PL  Pleine Lune
+      if frac(CptL) =  0.625 then PhLun:= 1;  // GC  Gibbeuse croissante
+      if frac(CptL) =  0.75  then PhLun:= 8;  // PQ  Premier quartier
+      if frac(CptL) =  0.875 then PhLun:= 7;  // PC  Premier croissant
     end
     else begin
       if frac(CptL) = -0.875 then PhLun:= 7;
@@ -269,7 +324,6 @@ begin
       if frac(CptL) = -0.125 then PhLun:= 5;
       if frac(CptL) =  0.0   then PhLun:= 6;// NL
     end;
-    TT:= PhLun;
     try
       EncodeDate(LunAnW,LunMsW,JrLunEntW); // jour de lune
     except
@@ -282,18 +336,9 @@ begin
       MessageDlg('pb2' + inttostr(AnPh) +  inttostr(MoPh) + inttostr(AJour),
                 mtInformation,[mbOk], 0);
     end;
-    // CurM2
-    // Phase de lune paire  (pl, pq, dq ou nl)
-    if (TT <> 0) and ((TT div 2) = (TT / 2)) then
-    begin
-      if (EncodeDate(LunAnW,LunMsW,JrLunEntW) <= EncodeDate(AnPh,MoPh,AJour + 3))
-         and (PhLun <> 0) then CurM2:= PhLun;
-    end;
-    // CurM
-    if (EncodeDate(LunAnW,LunMsW,JrLunEntW) <= EncodeDate(AnPh,MoPh,AJour + 1))
-        and (PhLun <> 0 ) then CurM:= PhLun;
     Found:= False;
     TDatL:= DateToStr(EncodeDate(LunAnW,LunMsW,JrLunEntW)); // jour de lune
+
     NoLune:= PhLun;
     case NoLune of
       1: tLune:= 36;
@@ -316,24 +361,55 @@ begin
     if not Found then
     begin
       gLunes:= gLunes + 1;
-      ListDatLun[gLunes]:= TDatL;
+      ListDatLun[gLunes-1]:= TDatL;
       //ListHeuLun[gLunes]:= THorL;
-      fMoonDays[gLunes].MDays:= EncodeDate(LunAnW,LunMsW,JrLunEntW)+EncodeTime(HrLun,MnLun,0,0);// date de lune
+      fMoonDays[gLunes-1].MDays:= EncodeDate(LunAnW,LunMsW,JrLunEntW)+EncodeTime(HrLun,MnLun,0,0);// date de lune
       //MoonDays[gLunes].MTime:= EncodeTime(HrLun,MnLun,0,0);        // horaire de lune
-      gNbrLune[gLunes]:= tLune;
+      gNbrLune[gLunes-1]:= tLune;
     end; // else exit;
-    CptL:= CptL + 0.250;
+    CptL:= CptL + interval;
   end;
-    for J:= 1 To 56 do
-    begin
-      case gNbrLune[J] of
-        35: TxtL:= 'PL';   //36:   '1
-        37: TxtL:= 'DQ';   //38:   '3
-        39: TxtL:= 'NL';   //40:   '5
-        41: TxtL:= 'PQ';   //42:   '7
-      end;
-      fMoonDays[J].MType:= TxtL; // type de lune
+  //simgArr: array of String = ('NL', 'PC', 'PQ', 'GC', 'PL', 'GD', 'DQ', 'DC');
+  ndx:= -1;
+  for J:= 0 To NumDays-1 do
+  begin
+    case gNbrLune[J] of
+        35: begin
+              TxtL:= 'Full moon';
+              ndx:= 4;
+            end;
+        36: begin
+              TxtL:= 'Waning gibbous';
+              ndx:= 5;
+            end;
+        37: begin
+              TxtL:= 'last quarter';
+              ndx:= 6;
+            end;
+        38: begin
+              TxtL:= 'Waning crescent';
+              ndx:= 7;
+            end;
+        39: begin
+              TxtL:= 'New moon';
+              ndx:= 0;
+            end;
+        40: begin
+              TxtL:= 'Waxing crescent';
+              ndx:= 1;
+            end;
+        41: begin
+              TxtL:= 'First quarter';
+              ndx:= 2;
+            end;
+        42: begin
+              TxtL:= 'Waxing gibbous';
+              ndx:= 3;
+            end;
     end;
+    fMoonDays[J].MType:= TxtL; // type de lune
+    fMoonDays[J].MIndex:= ndx;
+  end;
   fready:= true;
 end;
 
@@ -345,9 +421,12 @@ var
 begin
   result.MDays:= InvalidDate;
   result.MType:= '';
+  try
   if not fready then exit;
   for i:= 1 to 56 do
-    if fMoondate = Trunc (fMoonDays[i].MDays) then result:= fMoonDays[i];
+    if Trunc(fMoondate) = Trunc (fMoonDays[i].MDays) then result:= fMoonDays[i];
+  except
+  end;
 end;
 
 

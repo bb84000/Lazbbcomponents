@@ -1,17 +1,27 @@
-{------------------------------------------------------------------------------}
-{                                                                              }
-{  TSunTime v.2.0 -- Calculates times of sunrise, sunset.      }
-{                                                                              }
-{  The algorithm is derived from noaa code :                                   }
-{  http://www.srrb.noaa.gov/highlights/sunrise/sunrise.html                    }
-{                                                                              }
-{  Adapted and ported on Free Pascal by bb - sdtp - may 2021                   }
-{                                                                              }
-{  ZenithDistance :  angular distance of a celestial body from the zenith.     }
-{    90° minus the body's altitude above the horizon                           }
-{  Elevation : adding -2.076*sqrt(elevation in metres)/60                      }
-{                                                                              }
-{------------------------------------------------------------------------------}
+//******************************************************************************
+// TSunTime v.2.0 -- Calculates times of sunrise, sunset.
+//
+// The algorithm is derived from noaa code :
+// http://www.srrb.noaa.gov/highlights/sunrise/sunrise.html
+// Adapted and ported on Free Pascal by bb - sdtp - may 2021
+// Properties
+//   Sundate (TDateTime) : Selected day
+//   TimeZone (Double) : Time offset in hours
+//   DST (Double) : Daylight saving time (0: no, 1: yes);
+//   Latitude (Double) : Latitude in decimal degrees (N : positive, S : negative)
+//   Longitude (Double) : Longitude in decimal degrees (E : positive, W : negative)
+//   Altitude (Integer) : Not yet implemented
+//   TypeSun (TSunrise) : Sunrise/sunset type: standard, civil, nautic ou astro
+//
+//   Sunrise (TDateTime) : Sunrise at the selected date (Sundate)
+//   Sunset (TDateTime) : Sunset
+//   SunNoon (TDateTime) : Noon
+// Infos
+//  ZenithDistance :  angular distance of a celestial body from the zenith.
+//    90° minus the body's altitude above the horizon
+//    Todo : Altitude/Elevation : adding -2.076*sqrt(elevation in metres)/60
+//******************************************************************************
+
 unit Suntime;
 
 
