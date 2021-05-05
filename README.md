@@ -8,34 +8,12 @@ __TColorPicker__ : Similar to the object inspector color selector, combine a sys
 __TCheckBoxX__ : A checkbox with extra features, cross mark,, bullet, diamond, color fill and picture in addition to usual check mark.<br>
 __TitlePanel__ : A panel with groupbos like title. Title can be centered or left/right justified.
 
-## TSCrollButton and TScrollLabel properties
+# LazbbAstroComponents packet for Lazarus
 
-__Scrolling__ (True or false): Enable or disable caption scrolling. When caption is shorter than button width, scrolling is always disabled. Default: scrolling  is not enabled.<br>			
-__ScrollInterval__ (ms): Set the scroolling speed. A low interval means a high scrolling speed. A too low value doesn(t allow a smooth scrolling as the processor cannot do its job in the interval. Default : 50 ms.<br>
-__ScrollAutoString__ (string): String added at teh end of the text during scrolling. Default is '...' .<br>
-__ScrollGraph__ (True or false): Enable graphic (smooth) scrolling (pixel by pixel) instead text scrolling (character by character). Default: graphic.<br>
-__ScrollStep__ (number): Scrolling step (character or pixel according scrolling mode). Default 1.<br>
-__ScrollDirection__ : Scrolling direction, left to right or right to left. Default : left to right.  
+## __TSuntime__ : Give sunrise, sunset and noon time for a selected day<br>
+## __TMoonphases__ : Give moon phases for a selected year
 
-## TcolorPicker properties
-
-  Base colors, and their identifiers cannot be changed.<br>
-  Selected text cannot be edited. To change the selected color, use the colors dialog or paste a color with the popup menu. An invalid color is ignored.
-  Selected colours not in base colours are added at the end of the list.<br>
-  Like base combo box, component height is related to the items height.<br>
-  The colors dialog is localized by the operating system.
-
-__Color__ (TColor): Initial color<br>
-__MnuCopyCaption, MnuPasteCaption__ : allow popup localization<br>
-
-## TCheckBoxX properties
-
-__CheckBoxType__ Cross, Mark, Bullet, Diamond, Color, picture<br>
-__CheckColor__ Color of the above item (excepted picture)
-
-## TitlePanel properties
-
-  Bevel and border style are disabled. Border color can be customized. Title can be centered, left justified or right justified.
+Please see Wiki pages for more details;
 
 Free use.<br>
-bb - sdtp - april 2021
+bb - sdtp - may 2021
