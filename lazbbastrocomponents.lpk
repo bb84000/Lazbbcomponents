@@ -2,16 +2,26 @@
 <CONFIG>
   <Package Version="4">
     <PathDelim Value="\"/>
-    <Name Value="lazbbastrocomp"/>
+    <Name Value="lazbbastrocomponents"/>
     <Type Value="RunAndDesignTime"/>
+    <Author Value="bb- sdtp"/>
     <CompilerOptions>
       <Version Value="11"/>
       <PathDelim Value="\"/>
       <SearchPaths>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
+      <Linking>
+        <Debugging>
+          <GenerateDebugInfo Value="False"/>
+        </Debugging>
+      </Linking>
     </CompilerOptions>
-    <Files Count="2">
+    <Description Value="TSuntime : Fournit les heures de lever, de zénith et de coucher du soleil pour une date donnée.
+TMoonphases : Fournit les phases de la lune, avec les heures d'apparition"/>
+    <License Value="Libre"/>
+    <Version Major="1"/>
+    <Files Count="4">
       <Item1>
         <Filename Value="suntime.pas"/>
         <HasRegisterProc Value="True"/>
@@ -22,6 +32,16 @@
         <HasRegisterProc Value="True"/>
         <UnitName Value="Moonphases"/>
       </Item2>
+      <Item3>
+        <Filename Value="seasons.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Seasons"/>
+      </Item3>
+      <Item4>
+        <Filename Value="easter.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="Easter"/>
+      </Item4>
     </Files>
     <RequiredPkgs Count="3">
       <Item1>

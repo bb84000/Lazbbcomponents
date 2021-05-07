@@ -48,24 +48,28 @@ type
     fMoonyear: Integer;
     fMoondate: TDateTime;
     fCrescents: Boolean;
+    fTimeZone: Double;
     fready: Boolean;
     fMoonImages: TImageList;
     procedure Get_MoonDays;
     procedure setMoonDate(value: TDateTime);
     procedure setMoonYear(value: Integer);
     procedure SetCrescents(value: Boolean);
+    procedure SetTimeZone(Value: Double);
   protected
 
   public
     constructor Create(AOwner: TComponent); override;
     destructor Destroy; override;
     function isMoon:  TMoonRecord;
+    property Version : String read fversion;
     property Moondate: TDateTime read fMoondate write SetMoondate;
     property Moondays: TMoonDays read fMoonDays;
     property MoonImages: TImageList read fMoonImages; // write setMoonImages;
   published
     property Moonyear: Integer read fMoonyear write setMoonYear;
     property Crescents: Boolean read FCrescents write SetCrescents;
+    property Timezone: Double read fTimezone write setTimezone;
   end;
 
   const
@@ -75,6 +79,9 @@ procedure Register;
 
 implementation
 
+  const
+    simgArr: array of String = ('new_moon', 'waxing_crescent', 'first_quarter', 'waxing_gibbous', 'full_moon', 'waning_gibbous', 'last_quarter', 'waning_crescent');
+
 procedure Register;
 begin
   {$I moonphases.lrs}
@@ -82,8 +89,6 @@ begin
 end;
 
 constructor TMoonphases.Create(AOwner: TComponent);
-const
-  simgArr: array of String = ('new_moon', 'waxing_crescent', 'first_quarter', 'waxing_gibbous', 'full_moon', 'waning_gibbous', 'last_quarter', 'waning_crescent');
 var
   i: Integer;
 begin
@@ -91,6 +96,7 @@ begin
   {$I moonphases.lrs}
   fVersion:= '1.0';
   fMoonYear:= CurrentYear;
+  fTimeZone:= 0;
   fMoonImages:= TimageList.Create(self);
   fMoonImages.Height:= 44;
   fMoonImages.Width:= 44;
@@ -127,6 +133,15 @@ begin
   if fCrescents<> value then
   fCrescents:= value;
   if not (csDesigning in ComponentState) then Get_MoonDays;
+end;
+
+procedure TMoonphases.SetTimeZone(Value: Double);
+begin
+  if (fTimeZone <> Value) and (Value >= -12) and (Value <= +12) then
+  begin
+    fTimeZone := Value;
+    if not (csDesigning in ComponentState) then Get_MoonDays;
+  end;
 end;
 
 procedure TMoonphases.Get_MoonDays;
@@ -363,7 +378,7 @@ begin
       gLunes:= gLunes + 1;
       ListDatLun[gLunes-1]:= TDatL;
       //ListHeuLun[gLunes]:= THorL;
-      fMoonDays[gLunes-1].MDays:= EncodeDate(LunAnW,LunMsW,JrLunEntW)+EncodeTime(HrLun,MnLun,0,0);// date de lune
+      fMoonDays[gLunes-1].MDays:= EncodeDate(LunAnW,LunMsW,JrLunEntW)+EncodeTime(HrLun,MnLun,0,0)+fTimeZone/24;// date de lune
       //MoonDays[gLunes].MTime:= EncodeTime(HrLun,MnLun,0,0);        // horaire de lune
       gNbrLune[gLunes-1]:= tLune;
     end; // else exit;
@@ -373,41 +388,10 @@ begin
   ndx:= -1;
   for J:= 0 To NumDays-1 do
   begin
-    case gNbrLune[J] of
-        35: begin
-              TxtL:= 'Full moon';
-              ndx:= 4;
-            end;
-        36: begin
-              TxtL:= 'Waning gibbous';
-              ndx:= 5;
-            end;
-        37: begin
-              TxtL:= 'last quarter';
-              ndx:= 6;
-            end;
-        38: begin
-              TxtL:= 'Waning crescent';
-              ndx:= 7;
-            end;
-        39: begin
-              TxtL:= 'New moon';
-              ndx:= 0;
-            end;
-        40: begin
-              TxtL:= 'Waxing crescent';
-              ndx:= 1;
-            end;
-        41: begin
-              TxtL:= 'First quarter';
-              ndx:= 2;
-            end;
-        42: begin
-              TxtL:= 'Waxing gibbous';
-              ndx:= 3;
-            end;
-    end;
-    fMoonDays[J].MType:= TxtL; // type de lune
+    if gNbrLune[J]>38 then ndx:= gNbrLune[J]-39 else ndx:= gNbrLune[J]-31;
+    TxtL:= StringReplace(simgArr[ndx], '_', ' ', []);
+    TxtL[1]:= Upcase(TxtL[1]);
+    fMoonDays[J].MType:= TxtL;  // // type de lune
     fMoonDays[J].MIndex:= ndx;
   end;
   fready:= true;

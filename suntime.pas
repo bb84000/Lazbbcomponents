@@ -7,7 +7,6 @@
 // Properties
 //   Sundate (TDateTime) : Selected day
 //   TimeZone (Double) : Time offset in hours
-//   DST (Double) : Daylight saving time (0: no, 1: yes);
 //   Latitude (Double) : Latitude in decimal degrees (N : positive, S : negative)
 //   Longitude (Double) : Longitude in decimal degrees (E : positive, W : negative)
 //   Altitude (Integer) : Not yet implemented
@@ -41,11 +40,9 @@ type
     fVersion: String;
     fSundate: TDateTime;
     fTimeZone: Double;
-    fDST: Double;
     fLatitude: Double;
     fLongitude: Double;
     fAltitude: Integer;
-    //fZenithDistance: Double;
     fSunrise: TDateTime;
     fSunset: TDateTime;
     fSunNoon: TDateTime;
@@ -55,7 +52,6 @@ type
     procedure SetTypeSun(value: TSunRise);
     procedure SetSundate(Value: TDateTime);
     procedure SetTimeZone(Value: Double);
-    procedure SetDST(Value: Double);
     procedure SetLatitude(Value: Double);
     procedure SetLongitude(Value: Double);
     procedure SetAltitude(Value: Integer);
@@ -89,12 +85,10 @@ type
   published
     property Sundate: TDateTime read fSundate write SetSundate;
     property TimeZone: Double read fTimeZone write SetTimeZone;
-    property DST: Double read fDST write setDST;
     property Latitude: Double read fLatitude write SetLatitude;
     property Longitude: Double read fLongitude write SetLongitude;
     property Altitude: Integer read fAltitude write SetAltitude;       // Not yet implemented
     property TypeSun: TSunrise read fTypeSun write SetTypeSun;
-    //property ZenithDistance: Double read fZenithDistance; // write SetZenithDistance;
   end;
 
 procedure Register;
@@ -140,18 +134,9 @@ end;
 
 procedure TSuntime.SetTimeZone(Value: Double);
 begin
-  if (TimeZone <> Value) and (Value >= -12) and (Value <= +12) then
+  if (fTimeZone <> Value) and (Value >= -12) and (Value <= +12) then
   begin
     fTimeZone := Value;
-    ParametersChanged(nil);
-  end;
-end;
-
-procedure TSuntime.SetDST(Value: Double);
-begin
-  if fDST<>value then
-  begin
-    fDST := Value;
     ParametersChanged(nil);
   end;
 end;
@@ -182,7 +167,6 @@ begin
     ParametersChanged(nil);
   end;
 end;
-
 
 procedure TSuntime.ParametersChanged(Sender: TObject);
 begin
@@ -215,7 +199,7 @@ begin
   noonmin:= calcSolNoonUTC(t, longit);      // Find the time of solar noon at the location
   if index=2 then
   begin
-    result:= UTCMinutesToUTCTime(noonmin)+(fTimeZone+fDST)/24;   // update noon value
+    result:= UTCMinutesToUTCTime(noonmin)+fTimeZone/24;   // update noon value
     exit;
   end;
   tnoon:= calcTimeJulianCent (JD+noonmin/1440.0);
@@ -241,7 +225,7 @@ begin
   y:= YearOf(fSundate);
   m:= MonthOf(fSundate);
   d:= DayOfTheMonth(fSundate);
-  result:= EncodeDateTime(y,m,d,hr,mn,0,0)+(fTimeZone+fDST)/24;
+  result:= EncodeDateTime(y,m,d,hr,mn,0,0)+fTimeZone/24;
 end;
 
 //***********************************************************************

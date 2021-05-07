@@ -2,13 +2,13 @@
   This source is only used to compile and install the package.
  }
 
-unit lazbbastrocomp;
+unit lazbbastrocomponents;
 
 {$warn 5023 off : no warning about unused units}
 interface
 
 uses
-  Suntime, Moonphases, LazarusPackageIntf;
+  Suntime, Moonphases, Seasons, Easter, LazarusPackageIntf;
 
 implementation
 
@@ -16,8 +16,10 @@ procedure Register;
 begin
   RegisterUnit('Suntime', @Suntime.Register);
   RegisterUnit('Moonphases', @Moonphases.Register);
+  RegisterUnit('Seasons', @Seasons.Register);
+  RegisterUnit('Easter', @Easter.Register);
 end;
 
 initialization
-  RegisterPackage('lazbbastrocomp', @Register);
+  RegisterPackage('lazbbastrocomponents', @Register);
 end.
