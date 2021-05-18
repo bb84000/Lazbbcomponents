@@ -1,3 +1,18 @@
+//******************************************************************************
+// Easter Component unit
+// bb - sdtp May 2021
+// Provides Easter dates and associated
+// Parameters:
+//   EasterYear (Integer): Selected year for Easter dates
+// Properties :
+//   InvalidYear (Boolean) True if year is invalid
+//   Easterdate (DateTime) : Easter date
+//   EasterMondaydate (TDateTime) : Easter monday date
+//   Ascensdate (TDateTime) : Ascension date
+//   Pentecdate (TDateTime) : Pentecost date
+//   PentecMondaydate (TDateTime) : Pentecost monday date
+//******************************************************************************
+
 unit Easter;
 
 {$mode objfpc}{$H+}
@@ -34,9 +49,6 @@ type
     property Version: String read fVersion;
     property EasterYear: Integer read fEasteryear write setEasteryear;
   end;
-
-  //const
-   //InvalidDate= -693593; // 1st january 0001
 
 procedure Register;
 
