@@ -26,7 +26,7 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics,
-  Dialogs, Buttons, Menus, Clipbrd, PropEdits, Messages, LCLIntf;
+  Dialogs, Buttons, Menus, Clipbrd, PropEdits, Messages, LCLIntf, fptimer;
 
 Const
   ColorArr: array of string = (
@@ -56,6 +56,12 @@ Const
    { Other constants }
    fRBoxWidth  : Integer = 13; // Width of rectangular checkbox
    fRBoxHeight : Integer = 13; // Height of rectangular checkbox
+   DT_SINGLELINE = $20;
+   DT_NOPREFIX = $800;
+   DT_CENTER = 1;
+   DT_TOP = 0;
+   DT_LEFT = 0;
+   DT_BOTTOM = 8;
 
 type
   TBidiMod = (Disabled);
@@ -141,7 +147,8 @@ type
     //Borderwidth: integer;
     CaptionBmp: Tbitmap;
     CaptionRect: TRect;
-    FTimerScroll: TTimer;
+    //FTimerScroll: TTimer;
+    FTimerScroll:TFPTimer;
     FTimerCanvas: TTimer;
     ScrollText: String;
     txtHeight, txtWidth: Integer;
@@ -191,6 +198,7 @@ type
      FItemHeight: Integer;
      FItemWidth: Integer;
      FItems: TStrings;
+     FOnchange: TNotifyEvent;
      FMnuCopyCaption: String;
      FMnuPasteCaption: String;
      ColorCombo: TComboBox;
@@ -228,6 +236,7 @@ type
      property Visible;
      property Align;
      property Font;
+     property Onchange: TNotifyEvent read fOnchange write FOnchange;
   end;
 
 
@@ -411,7 +420,100 @@ type
 
   end;
 
-
+  type
+  TSignalMeterOrientation = (gmHorizontal, gmVertical);
+  TSignalMeter = class(TGraphicControl)
+  private
+    { Private declarations }
+    fValue          : Double;
+    fColorFore      : TColor;
+    fColorBack      : TColor;
+    fSignalUnit     : ShortString;
+    fValueMax       : Double;
+    fValueMin       : Double;
+    fDigits         : Byte;
+    fIncrement      : Double;
+    fShowIncrements : Boolean;
+    fGapTop         : Word;
+    fGapBottom      : Word;
+    fBarThickness   : Word;
+    fMarkerColor    : TColor;
+    fShowMarker     : Boolean;
+    fShowTopText    : Boolean;
+    fShowValueMin   : Boolean;
+    fShowValueMax   : Boolean;
+    fOrientation    : TSignalMeterOrientation;
+    //Variables used internallly
+    TopTextHeight: Word;
+    fLeftMeter    : Word;
+    DisplayValue : String;
+    DrawStyle : Integer;
+    TheRect : TRect;
+    //End of variables used internallly
+    procedure SetValue(val : Double);
+    procedure SetColorBack(val : TColor);
+    procedure SetColorFore(val : TColor);
+    procedure SetSignalUnit(val : ShortString);
+    procedure SetValueMin(val : Double);
+    procedure SetValueMax(val : Double);
+    procedure SetDigits(val : Byte);
+    procedure SetTransparent(val : Boolean);
+    Function GetTransparent : Boolean;
+    procedure SetIncrement(val : Double);
+    procedure SetShowIncrements(val : Boolean);
+    procedure SetGapTop(val : Word);
+    procedure SetGapBottom(val : Word);
+    procedure SetLeftMeter (val : Word);
+    procedure SetBarThickness(val : Word);
+    procedure SetMarkerColor(val : TColor);
+    procedure SetShowMarker(val : Boolean);
+    procedure SetShowTopText(val : Boolean);
+    procedure SetShowValueMin(val : Boolean);
+    procedure SetShowValueMax(val : Boolean);
+    procedure DrawTopText;
+    procedure DrawMeterBar;
+    procedure DrawIncrements;
+    Function ValueToPixels(val : Double) : Integer;
+    procedure DrawValueMax;
+    procedure DrawValueMin;
+    procedure DrawMarker;
+    procedure SetOrientation(Value: TSignalMeterOrientation);
+  protected
+    { Protected declarations }
+    procedure Paint;override;
+    procedure CMTextChanged(var Message: TMessage); message CM_TEXTCHANGED;
+  public
+    { Public declarations }
+    constructor Create(AOwner : Tcomponent);override;
+    destructor Destroy ; override;
+  published
+    { Published declarations }
+    property Align;
+    property Caption;
+    property Visible;
+    property Value          : Double read fValue write SetValue;
+    property Color;
+    property ColorFore      : Tcolor read fColorFore write SetColorFore;
+    property ColorBack      : Tcolor read fColorBack write SetColorBack;
+    property SignalUnit     : ShortString read fSignalUnit write SetSignalUnit;
+    property ValueMin       : Double read fValueMin write SetValueMin;
+    property ValueMax       : Double read fValueMax write SetValueMax;
+    property Digits         : Byte read fDigits write SetDigits;
+    property Increment      : Double read fIncrement write SetIncrement;
+    property ShowIncrements : Boolean read fShowIncrements write SetShowIncrements;
+    property Transparent    : Boolean read GetTransparent write SetTransparent;
+    property GapTop         : Word read fGapTop write SetGapTop;
+    property GapBottom      : Word read fGapBottom write SetGapBottom;
+    property LeftMeter      : Word read fLeftMeter write SetLeftMeter;
+    property BarThickness   : Word read fBarThickness write SetBarThickness;
+    property MarkerColor    : TColor read fMarkerColor write SetMarkerColor;
+    property ShowMarker     : Boolean read fShowMarker write SetShowMarker;
+    property ShowTopText    : Boolean read fShowTopText write SetShowTopText;
+    property ShowValueMin    : Boolean read fShowValueMin write SetShowValueMin;
+    property ShowValueMax    : Boolean read fShowValueMax write SetShowValueMax;
+    property Orientation: TSignalMeterOrientation read FOrientation
+      write SetOrientation default gmVertical;
+  end;
 
 
 procedure Register;
@@ -426,6 +528,7 @@ begin
    RegisterComponents('lazbbComponents',[TColorPicker]);
    RegisterComponents('lazbbComponents',[TCheckBoxX]);
    RegisterComponents('lazbbComponents',[TTitlePanel]);
+   RegisterComponents('lazbbComponents',[TSignalMeter]);
    // Hide some properties from
    {RegisterPropertyEditor(TypeInfo(Boolean), TColorPicker, 'Autosize', THiddenPropertyEditor); // Need IDEIntf packet }
 end;
@@ -460,7 +563,6 @@ begin
   FTimerScroll.Enabled:= False;
   FTimerScroll.OnTimer:= @OnTimerScrollL;
   FTimerScroll.Interval:= FScrollInterval;
-
   ScrollIndex:= 0;
   inherited Layout:= Layout;
   inherited Caption:= FCaption;
@@ -719,10 +821,15 @@ begin
   FScrollAutoString:= '...';
   FScrollGraph:= true;
   FScrollStep:= 1;
-  FTimerSCroll:= TTimer.Create(self);
+  //FTimerSCroll:= TTimer.Create(self);
+  FTimerSCroll:= TFPTimer.Create(self);
+  FTimerScroll.UseTimerThread:= true;
   FTimerScroll.Enabled:= False;
   FTimerScroll.OnTimer:= @OnTimerScrollL;
   FTimerScroll.Interval:= FScrollInterval;
+  //FTimerScroll.StartTimer;
+
+
   ScrollIndex:= 0;
   inherited Layout:= Layout;
   inherited Caption:= FCaption;
@@ -1011,6 +1118,7 @@ begin
   begin
     FMnuPasteCaption:= mpast;
     MnuPaste.Caption := mpast;
+    if Assigned(FOnChange) then FOnChange(Self);
   end;
 end;
 
@@ -1045,6 +1153,7 @@ begin
     //ColorCombo.ItemIndex:=-1;
     newcol:=true;
     FColor:= cl;
+
     For i:= 0 to ColorCombo.Items.Count-1 do
       if ColorToString(cl)= ColorCombo.Items[i] then
       begin
@@ -1055,10 +1164,11 @@ begin
     begin
       ColorCombo.AddItem(ColorToString(cl), nil);
       ColorCombo.ItemIndex:= ColorCombo.Items.Count-1; ;
+
     end;
+
   end;
 end;
-
 
 
 procedure TColorPicker.DoResize(Sender: Tobject);
@@ -1075,6 +1185,7 @@ end;
 procedure TColorPicker.DoSelect(Sender: TObject);
 begin
   FColor:= StringToColor(ColorCombo.Items[ColorCombo.ItemIndex]);
+   if Assigned(FOnChange) then FOnChange(Self);
 end;
 
 // Owner draw paint combho with color
@@ -1562,6 +1673,434 @@ begin
   Canvas.TextRect(Rect(lmrg, 0, txtw+lmrg, txth), lmrg ,0,caption, Style);
 
 end;
+
+constructor TSignalMeter.Create(AOwner: TComponent);
+begin
+     inherited Create(AOwner);
+     ControlStyle := ControlStyle + [csOpaque, csReplicatable, csSetCaption];
+     width              := 100;
+     height             := 200;
+     fColorFore         := clRed;
+     fColorBack         := clBtnFace;
+     fMarkerColor       := clBlue;
+     fValueMin          := 0;
+     fValueMax          := 100;
+     fLeftMeter         := 10;
+     fIncrement         := 10;
+     fShowIncrements    := true;
+     fShowMarker        := true;
+     fValue             := 0;
+     fGapTop            := 10;
+     fGapBottom         := 10;
+     fBarThickness      := 5;
+     fSignalUnit        := 'Units';
+     fOrientation       := gmVertical;
+end;
+
+destructor TSignalMeter.Destroy;
+begin
+     inherited Destroy;
+end;
+
+procedure TSignalMeter.SetOrientation(Value: TSignalMeterOrientation);
+begin
+  if FOrientation <> Value then
+  begin
+    FOrientation := Value;
+    Invalidate;
+  end;
+end;
+procedure TSignalMeter.CMTextChanged(var Message: TMessage);
+begin
+     Invalidate;
+end;
+
+procedure TSignalMeter.SetValue(val : Double);
+begin
+     if (val <> fValue) and (val >= fValueMin) and (val <= fValueMax) then begin
+        fValue := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetColorFore(val : TColor);
+begin
+     if val <> fColorFore then begin
+        fColorFore := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetColorBack(val : TColor);
+begin
+     if val <> fColorBack then begin
+        fColorBack := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetSignalUnit(val : ShortString);
+begin
+     if val <> fSignalUnit then begin
+        fSignalUnit := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetValueMin(val : Double);
+begin
+     if (val <> fValueMin) and (val <= fValue) then begin
+        fValueMin := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetValueMax(val : Double);
+begin
+     if (val <> fValueMax) and (val >= fValue) then begin
+        fValueMax := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetDigits(val : Byte);
+begin
+     if (val <> fDigits) then begin
+        fDigits := val;
+        //Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetIncrement(val : Double);
+begin
+     if (val <> fIncrement) and (val > 0) then begin
+        fIncrement := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetShowIncrements(val : Boolean);
+begin
+     if (val <> fShowIncrements) then begin
+        fShowIncrements := val;
+        Invalidate;
+     end;
+end;
+
+function TSignalMeter.GetTransparent : Boolean;
+begin
+     Result := not (csOpaque in ControlStyle);
+end;
+
+procedure TSignalMeter.SetTransparent(Val : Boolean);
+begin
+  if Val <> Transparent then
+  begin
+    if Val then
+      ControlStyle := ControlStyle - [csOpaque]
+    else
+      ControlStyle := ControlStyle + [csOpaque];
+    Invalidate;
+  end;
+end;
+
+procedure TSignalMeter.SetGapTop(val : Word);
+begin
+     if (val <> fGapTop) then begin
+        fGapTop := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetGapBottom(val : Word);
+begin
+     if (val <> fGapBottom) then begin
+        fGapBottom := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetLeftMeter(val : Word);
+begin
+     if (val <> fLeftMeter) then begin
+        fLeftMeter := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetBarThickness(val : Word);
+begin
+     if (val <> fBarThickness) and (val > 0) then begin
+        fBarThickness := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetMarkerColor(val : TColor);
+begin
+     if (val <> fMarkerColor) then begin
+        fMarkerColor := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetShowMarker(val : Boolean);
+begin
+     if (val <> fShowMarker) then begin
+        fShowMarker := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetShowTopText(val : Boolean);
+begin
+     if (val <> fShowTopText) then begin
+        fShowTopText := val;
+        Invalidate;
+     end ;
+end;
+
+procedure TSignalMeter.SetShowValueMin(val : Boolean);
+begin
+     if (val <> fShowValueMin) then begin
+        fShowValueMin := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.SetShowValueMax(val : Boolean);
+begin
+     if (val <> fShowValueMax) then begin
+        fShowValueMax := val;
+        Invalidate;
+     end;
+end;
+
+procedure TSignalMeter.DrawIncrements;
+var
+   i : Double;
+   PosPixels : Word;
+begin
+     if fShowIncrements then begin
+        With Canvas do begin
+             i := fValueMin;
+             While i <= fValueMax do begin
+                   PosPixels := ValueToPixels(i);
+                   pen.color := clGray;
+                   MoveTo(LeftMeter + BarThickness + 3, PosPixels-1);
+                   LineTo(LeftMeter + BarThickness + 7, PosPixels-1);
+                   pen.color := clWhite;
+                   MoveTo(LeftMeter + BarThickness + 3, PosPixels);
+                   LineTo(LeftMeter + BarThickness + 7, PosPixels);
+                   i := i+fIncrement;
+             end;
+        end;
+     end;
+end;
+
+procedure TSignalMeter.DrawMarker;
+begin
+     If fShowMarker then begin
+        With Canvas do begin
+          pen.color := clWhite;
+          Brush.Style := bsClear;
+          MoveTo(LeftMeter - 2, ValueToPixels(fValue));
+          LineTo(LeftMeter - 6, ValueToPixels(fValue)-4);
+          LineTo(LeftMeter - 6, ValueToPixels(fValue)+4);
+          pen.color := clGray;
+          LineTo(LeftMeter - 2, ValueToPixels(fValue));
+
+          pen.color := fMarkerColor;
+          Brush.color := fMarkerColor;
+          Brush.Style := bsSolid;
+          Polygon([Point(LeftMeter - 3, ValueToPixels(fValue)),
+                   Point(LeftMeter - 5, ValueToPixels(fValue)-2),
+                   Point(LeftMeter - 5, ValueToPixels(fValue)+2),
+                   Point(LeftMeter - 3, ValueToPixels(fValue))]);
+        end;
+     end;
+end;
+
+procedure TSignalMeter.DrawTopText;
+begin
+   If fShowTopText then begin
+     With Canvas do begin
+          DisplayValue := Caption;
+          Brush.Style := bsClear;
+          TheRect := ClientRect;
+          DrawStyle := DT_SINGLELINE + DT_NOPREFIX + DT_CENTER + DT_TOP;
+          Font.Style := [fsBold];
+          TopTextHeight := DrawText(Handle, PChar(DisplayValue), Length(DisplayValue),
+                                    TheRect, DrawStyle);
+
+          Font.Style := [];
+          TheRect.Top := TopTextHeight;
+          DisplayValue := FloatToStrF(Value, ffFixed, 8, fDigits) + ' ' + fSignalUnit;
+          TopTextHeight := TopTextHeight + DrawText(Handle, PChar(DisplayValue),
+                           Length(DisplayValue), TheRect, DrawStyle);
+          TopTextHeight := TopTextHeight + fGapTop;
+     end;
+   end else
+   begin
+     DisplayValue := '';
+     TopTextHeight:= GapTop;
+   end;
+end;
+
+procedure TSignalMeter.DrawValueMin;
+begin
+   If fShowValueMin then begin
+     With Canvas do begin
+          TheRect := ClientRect;
+          TheRect.Left := LeftMeter + BarThickness + 10;
+          TheRect.Top := TopTextHeight;
+          TheRect.Bottom := Height - fGapBottom + 6;
+          Brush.Style := bsClear;
+
+          DrawStyle := DT_SINGLELINE + DT_NOPREFIX + DT_LEFT + DT_BOTTOM;
+          DisplayValue := FloatToStrF(ValueMin, ffFixed, 8, fDigits) + ' ' + fSignalUnit;
+          DrawText(Handle, PChar(DisplayValue), Length(DisplayValue), TheRect, DrawStyle);
+     end;
+   end;
+end;
+
+procedure TSignalMeter.DrawValueMax;
+begin
+   If fShowValueMax then begin
+     With Canvas do begin
+          TheRect := ClientRect;
+          TheRect.Left := LeftMeter + BarThickness + 10;
+          TheRect.Top := TopTextHeight - 6;
+          Brush.Style := bsClear;
+
+          DrawStyle := DT_SINGLELINE + DT_NOPREFIX + DT_LEFT + DT_TOP;
+          DisplayValue := FloatToStrF(ValueMax, ffFixed, 8, fDigits) + ' ' + fSignalUnit;
+          DrawText(Handle, PChar(DisplayValue), Length(DisplayValue), TheRect, DrawStyle);
+     end;
+   end;
+end;
+
+procedure TSignalMeter.DrawMeterBar;
+begin
+  Case fOrientation of
+    gmHorizontal:
+        With Canvas do begin
+          pen.Color := fColorBack;
+          Brush.Color := fColorBack;
+          Brush.Style := bsSolid;
+          //Rectangle(LeftMeter, ValueToPixels(fValueMax), LeftMeter + fBarThickness, ValueToPixels(fValueMin));
+          Rectangle (GapBottom, LeftMeter, ValueToPixels(fValueMax), LeftMeter+ fBarThickness);
+          pen.Color := fColorFore;
+          Brush.Color := fColorFore;
+          Brush.Style := bsSolid;
+          //Rectangle(LeftMeter + 1, ValueToPixels(fValue), LeftMeter + fBarThickness, ValueToPixels(fValueMin));
+          Rectangle (GapBottom , LeftMeter, ValueToPixels(fValue), LeftMeter+ fBarThickness);
+
+          pen.color := clWhite;
+          Brush.Style := bsClear;
+          //MoveTo(LeftMeter + fBarThickness-1, ValueToPixels(fValueMax));
+          MoveTo(GapBottom , LeftMeter+ fBarThickness);
+          //LineTo(LeftMeter, ValueToPixels(fValueMax));
+          LineTo(GapBottom, LeftMeter);
+          //LineTo(LeftMeter, ValueToPixels(fValueMin)-1);
+          LineTo(ValueToPixels(fValueMax),LeftMeter);
+          pen.color := clGray;
+          //LineTo(LeftMeter + fBarThickness, ValueToPixels(fValueMin)-1);
+          LineTo(ValueToPixels(fValueMax), LeftMeter+ fBarThickness);
+          //LineTo(LeftMeter + fBarThickness, ValueToPixels(fValueMax));
+          LineTo(GapBottom, LeftMeter + fBarThickness );
+          If (fValue > fValueMin) and (fValue < fValueMax) then begin
+             pen.color := clWhite;
+             //MoveTo(LeftMeter+1, ValueToPixels(fValue));
+             MoveTo(ValueToPixels(fValue), LeftMeter+1);
+             //LineTo(LeftMeter + fBarThickness, ValueToPixels(fValue));
+             LineTo(ValueToPixels(fValue), LeftMeter+fBarThickness-1);
+             pen.color := clGray;
+             //MoveTo(LeftMeter+1, ValueToPixels(fValue)-1);
+             MoveTo(ValueToPixels(fValue)+1, LeftMeter+1);
+             //LineTo(LeftMeter + fBarThickness, ValueToPixels(fValue)-1);
+             LineTo(ValueToPixels(fValue)+1, LeftMeter+fBarThickness-1);
+          end;
+
+        end;
+    gmVertical:
+        With Canvas do begin
+          pen.Color := fColorBack;
+          Brush.Color := fColorBack;
+          Brush.Style := bsSolid;
+          Rectangle(LeftMeter, ValueToPixels(fValueMax), LeftMeter + fBarThickness, ValueToPixels(fValueMin));
+
+          pen.Color := fColorFore;
+          Brush.Color := fColorFore;
+          Brush.Style := bsSolid;
+          Rectangle(LeftMeter + 1, ValueToPixels(fValue), LeftMeter + fBarThickness, ValueToPixels(fValueMin));
+
+          pen.color := clWhite;
+          Brush.Style := bsClear;
+          MoveTo(LeftMeter + fBarThickness-1, ValueToPixels(fValueMax));
+          LineTo(LeftMeter, ValueToPixels(fValueMax));
+          LineTo(LeftMeter, ValueToPixels(fValueMin)-1);
+
+          pen.color := clGray;
+          LineTo(LeftMeter + fBarThickness, ValueToPixels(fValueMin)-1);
+          LineTo(LeftMeter + fBarThickness, ValueToPixels(fValueMax));
+
+          If (fValue > fValueMin) and (fValue < fValueMax) then begin
+             pen.color := clWhite;
+             MoveTo(LeftMeter+1, ValueToPixels(fValue));
+             LineTo(LeftMeter + fBarThickness, ValueToPixels(fValue));
+             pen.color := clGray;
+             MoveTo(LeftMeter+1, ValueToPixels(fValue)-1);
+             LineTo(LeftMeter + fBarThickness, ValueToPixels(fValue)-1);
+          end;
+       end;
+     end;
+end;
+
+Function TSignalMeter.ValueToPixels(val : Double) : Integer;
+var
+   factor : Double;
+begin
+     Result := 0;
+    Case fOrientation of
+    gmHorizontal:
+     If fValueMax > fValueMin then begin
+        Factor := (Width-fGapBottom-fGapTop)/(fValueMax-fValueMin);
+        Result := Round(Factor*val+fGapBottom);
+     end;
+    gmVertical:
+      If fValueMax > fValueMin then begin
+        Factor := (Height-fGapBottom-TopTextHeight)/(fValueMin-fValueMax);
+        Result := Round(Factor*val -Factor*fValueMax+TopTextHeight);
+     end;
+  end;
+end;
+
+
+procedure TSignalMeter.Paint;
+begin
+
+     //if width < fLeftMeter+ fBarThickness + fLeftMeter then width := fLeftMeter+ fBarThickness + fLeftMeter;
+
+
+     With Canvas do begin
+          if not Transparent then begin
+             Brush.Color := Self.Color;
+             Brush.Style := bsSolid;
+             FillRect(ClientRect);
+          end;
+          Brush.Style := bsClear;
+          DrawTopText;
+          DrawValueMin;
+          DrawValueMax;
+          DrawMeterBar;
+          DrawMarker;
+          DrawIncrements;
+     end;
+  end;
+
+
+
 
 end.
 
