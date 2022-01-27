@@ -515,6 +515,23 @@ type
       write SetOrientation default gmVertical;
   end;
 
+  type
+  TLFPTimer = class(TFPTimer)
+  private
+
+  protected
+
+  public
+    constructor create;
+  published
+    Property Enabled;
+    Property Interval;
+    Property UseTimerThread;
+    Property OnTimer;
+    Property OnStartTimer;
+    Property OnStopTimer;
+  end;
+
 
 procedure Register;
 
@@ -529,6 +546,7 @@ begin
    RegisterComponents('lazbbComponents',[TCheckBoxX]);
    RegisterComponents('lazbbComponents',[TTitlePanel]);
    RegisterComponents('lazbbComponents',[TSignalMeter]);
+   RegisterComponents('lazbbComponents',[TLFPTimer]);
    // Hide some properties from
    {RegisterPropertyEditor(TypeInfo(Boolean), TColorPicker, 'Autosize', THiddenPropertyEditor); // Need IDEIntf packet }
 end;
@@ -2100,7 +2118,11 @@ begin
   end;
 
 
+// TLFPTimer
 
+constructor TLFPTimer.create;
+begin
+end;
 
 end.
 
