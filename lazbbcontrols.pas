@@ -16,6 +16,8 @@
 {   ScrollDirection (sdLeftToRight, sdRightToLeft)                             }
 { TColorPicker : Combine color combobox with color dialog                      }
 {                Popup menu to copy/paste colour name can be localized         }
+{ TSignalMeter : Like progress bar but more responsive                                                              }
+{ TLFPTimer : TFPtimer addition to the palette                                                                 }
 {******************************************************************************}
 
 unit lazbbcontrols;
@@ -26,7 +28,7 @@ interface
 
 uses
   Classes, SysUtils, ExtCtrls, StdCtrls, LResources, Forms, Controls, Graphics,
-  Dialogs, Buttons, Menus, Clipbrd, PropEdits, Messages, LCLIntf, fptimer;
+  Dialogs, Buttons, Menus, Clipbrd, PropEdits, Messages, LCLIntf, lclproc, fptimer;
 
 Const
   ColorArr: array of string = (
@@ -45,11 +47,11 @@ Const
                'clBlue',
                'clFuchsia',
                'clAqua',
+               'clMedGray',
                'clWhite',
                'clMoneyGreen',
                'clSkyBlue',
                'clCream',
-               'clMedGray',
                'clNone',
                'clDefault');
 
@@ -210,6 +212,7 @@ type
      procedure DoDrawItem (Control: TWinControl; Index: Integer; ARect: TRect; State: TOwnerDrawState);
      procedure DoSelect(Sender: TObject);
      procedure DoBtnClick(Sender: TObject);
+     procedure DoKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
      procedure SetItemHeight(ih: integer);
      procedure SetItemWidth(iw: integer);
      procedure SetColor(cl: TColor);
@@ -516,13 +519,13 @@ type
   end;
 
   type
-  TLFPTimer = class(TFPTimer)
+  TLFPTimer = Class(TFPCustomTimer)
   private
 
   protected
 
   public
-    constructor create;
+
   published
     Property Enabled;
     Property Interval;
@@ -940,9 +943,11 @@ end;
 
 destructor TScrollLabel.Destroy;
 begin
-  if assigned(BkGndBmp) then BkGndBmp.Free;
-  if assigned(ScrollBmp) then ScrollBmp.Free;
-  if assigned(CaptionBmp) then CaptionBmp.Free;
+  FTimerSCroll.StopTimer;
+  FTimerCanvas.enabled:=false;
+  //if assigned(BkGndBmp) then BkGndBmp.Free;
+  //if assigned(ScrollBmp) then ScrollBmp.Free;
+  //if assigned(CaptionBmp) then CaptionBmp.Free;
   if assigned(FTimerScroll) then FTimerSCroll.free;
   if assigned(FTimerCanvas) then FTimerCanvas.free;
   Inherited Destroy;
@@ -1064,6 +1069,8 @@ begin
   FColor:= clDefault;
   ColorCombo.OnDrawItem:= @DoDrawItem;
   ColorCombo.OnSelect:=  @DoSelect;
+  ColorCombo.OnKeyDown:= @DoKeyDown;
+
   ColorBtn.Parent:= self;
   ColorBtn.left:= 105;
   ColorBtn.Top:= 0;
@@ -1074,19 +1081,21 @@ begin
   ColorBtn.LoadGlyphFromLazarusResource('tcolorbtn');
   ColorBtn.OnClick:= @DoBtnClick;
   ColorDlg:= TColorDialog.Create(self);
-  PopupMnu:= TPopupMenu.Create(self);
+  PopupMnu:= TPopupMenu.Create(ColorCombo);
   PopupMnu.OnPopup:= @MnuPopup;
   MnuCopy := TMenuItem.Create(PopupMnu);
   MnuCopy.Caption := MnuCopyCaption;
+  MnuCopy.ShortCut:= TextToShortCut('CTRL+C');
   MnuCopy.OnClick := @MnuCopyClick;
   PopupMnu.Items.Add(MnuCopy);
   MnuPaste := TMenuItem.Create(PopupMnu);
   Mnupaste.Caption := MnuPasteCaption;
+  MnuPaste.ShortCut:= TextToShortCut('CTRL+V');  ;
   MnuPaste.OnClick := @MnuPasteClick;
   PopupMnu.Items.Add(MnuPaste);
   PopupMenu:= PopupMnu;
-  MnuCopyCaption:= '&Copy';
-  MnuPasteCaption:= '&Paste';
+  MnuCopyCaption:= 'Copy';
+  MnuPasteCaption:= 'Paste';
   FItems:= TStringList.create;
   FItems.Assign(ColorCombo.Items);
 end;
@@ -1241,6 +1250,21 @@ begin
 
 end;
 
+// implement Ctrl-C and Ctrl-V to copy and paste
+procedure TColorPicker.DoKeyDown(Sender: TObject; var Key: Word; Shift: TShiftState);
+begin
+  if (ssCtrl in Shift) and (Key = Ord('C')) then
+  begin
+    MnuCopyClick(Sender);
+    key:= 0;
+  end;
+  if (ssCtrl in Shift) and (Key = Ord('V')) then
+  begin
+    MnuPasteClick(Sender);
+    key:= 0;
+  end;
+end;
+
 // TCheckbox color
 
 Destructor TCheckBoxX.Destroy;
@@ -1250,8 +1274,6 @@ fBitMap.Free;
 End;
 
 Constructor TCheckBoxX.Create(AOwner : TComponent);
-var
-  s: String;
 Begin
   inherited Create(AOwner);
 Parent:= TWinControl(aOwner);
@@ -1400,7 +1422,6 @@ End;
 
 Procedure TCheckBoxX.Paint;
 Var
-   Buffer                        : Array[0..127] of Char;
    I                             : Integer;
    fTextWidth,fTextHeight        : Integer;
 Begin
@@ -2118,11 +2139,10 @@ begin
   end;
 
 
-// TLFPTimer
 
-constructor TLFPTimer.create;
-begin
-end;
+
+
+
 
 end.
 
