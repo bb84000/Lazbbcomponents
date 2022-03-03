@@ -6,9 +6,9 @@ __TCheckBoxX__ : A checkbox with extra features, cross mark,, bullet, diamond, c
 __TColorPicker__ : Similar to the object inspector color selector, combine a system colors combo box and a color dialog.<br>
 __TSCrollButton__ : Text scrolling button (TSpeedbutton descendant)<br>
 __TSCrollLabel__ : Text scrolling label (TLabel descendant)<br>
-__TSignalMeter__ : A more responsive progress bar, allow real time audio signal strength 
-__TLFPTimer__ : FPTimer component 
-__TitlePanel__ : A panel with groupbos like title. Title can be centered or left/right justified.
+__TSignalMeter__ : A more responsive progress bar, allow real time audio signal strength<br>
+__TLFPTimer__ : FPTimer component<br> 
+__TitlePanel__ : A panel with groupbox like title. Title can be centered or left/right justified.
 
 # LazbbAstroComponents packet for Lazarus
 
