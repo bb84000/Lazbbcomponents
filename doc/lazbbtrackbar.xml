@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fpdoc-descriptions>
+  <package name="lazbbcomponents">
+    <module name="lazbbtrackbar">
+      <element name="TbbTrackBar.Orientation">
+        <short>Indicates the horizontal or vertical orientation for the track bar control.</short>
+      </element>
+      <element name="TbbTrackBar.BorderStyle"/>
+      <element name="TbbTrackBar">
+        <short>Similar to TTrackbar</short>
+      </element>
+      <element name="TbbTrackBar.Frequency">
+        <short>Indicates the frequency of tick marks displayed for the control.</short>
+        <descr>Divider of the Max-Min interval used to display a proper scale.<br/>
+For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks on the scale
+</descr>
+      </element>
+      <element name="TbbTrackBar.GapMax">
+        <short>Space between the ruler bottom (vertical bbTrackBar) or right (horizontal bbTrackBar) and the component bottom or right</short>
+      </element>
+      <element name="TbbTrackBar.GapMin">
+        <short>Space between the component top (vertical bbTrackBar) or left (horizontal bbTrackBar) and the ruler top or left</short>
+      </element>
+      <element name="TbbTrackBar.Max">
+        <short>Maximum value of Position</short>
+      </element>
+      <element name="TbbTrackBar.Min">
+        <short>Minimum value of position</short>
+      </element>
+      <element name="TbbTrackBar.Position">
+        <short>Position of the slider on the ruler</short>
+      </element>
+      <element name="TbbTrackBar.Reversed">
+        <short>Reverse the position of the slider on the ruler.</short>
+        <descr>
+          <b>False</b> (default): The slider moves from top to bottom (vertical orientation) or left to right (horizontal orientation)
+          <br/>
+          <b>True</b> : The slider moves from bottom to top (vertical orientation) or right to left (horizontal orientation)
+</descr>
+      </element>
+      <element name="TbbTrackBar.RulerBorderColor">
+        <short>Color of the ruler's border</short>
+      </element>
+      <element name="TbbTrackBar.RulerColor">
+        <short>Ruler background color</short>
+      </element>
+      <element name="TbbTrackBar.ScaleColor">
+        <short>Scale ticks color</short>
+      </element>
+      <element name="TbbTrackBar.ScaleMarks">
+        <short>Scale ticks disposition and shape.</short>
+        <descr>Same as classic TTrackbar TickMarks:
+<br/><b>tmTopLeft</b>: The slider's arrow is top oriented (horizontal scale on the top) or left oriented (vertical scale on the left)
+<br/><b>tmBottomRight</b>: The slider's arrow is bottom oriented (horizontal scale on the bottom ) or right oriented (horiziontal scale on the right)
+<br/><b>tmBoth</b>:There are two slider's arrows and two scales (one on  each side od the ruler
+<br/><b>tmNone</b>: No scales and no arrows.
+</descr>
+      </element>
+    <element name="TbbTrackBar.ScaleSize"><short>Width of the scale (vertical bar) or heigth of the scale (horizontal bar)</short><descr>These are the width/ height of min, zero and max ticks. Other ticks are half this size
+</descr>
+      </element><element name="TbbTrackBar.SliderColor"><short>Slider main color</short>
+      </element><element name="TbbTrackBar.SliderColorDown"><short>Slider color when the mouse button is pressed on the slider's surface</short>
+      </element><element name="TbbTrackBar.SliderColorHover"><short>Slider color when the mouse is over the slider's surface</short>
+      </element><element name="TbbTrackBar.Transparent"><short>The slider background is transparent</short>
+      </element>
+    <element name="TbbTrackBar.KeyIncrement"><short>Step value to change positoion when an arrow key is pressed</short>
+      </element>
+    </module>
+  </package>
+</fpdoc-descriptions>

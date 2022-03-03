@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
-  <Package Version="4">
+  <Package Version="5">
     <PathDelim Value="\"/>
     <Name Value="lazbbastrocomponents"/>
     <Type Value="RunAndDesignTime"/>
@@ -18,7 +18,7 @@
       </Linking>
     </CompilerOptions>
     <Description Value="TSuntime : Fournit les heures de lever, de zénith et de coucher du soleil pour une date donnée.
-TMoonphases : Fournit les phases de la lune, avec les heures d'apparition"/>
+TMoonphases : Fournit les phases de la lune, avec les heures d&apos;apparition"/>
     <License Value="Libre"/>
     <Version Major="1"/>
     <Files Count="4">
@@ -43,6 +43,7 @@ TMoonphases : Fournit les phases de la lune, avec les heures d'apparition"/>
         <UnitName Value="Easter"/>
       </Item4>
     </Files>
+    <CompatibilityMode Value="True"/>
     <RequiredPkgs Count="3">
       <Item1>
         <PackageName Value="IDEIntf"/>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fpdoc-descriptions><package name="lazbbcomponents"><module name="lazbbcontrols"><element name="TSCrollButton"><short>Text scrolling button (TSpeedbutton descendant)</short>
+      </element>
+    <element name="TSCrollButton.BidiMode"><short>Property disabled</short><descr>Property disabled for this control
+</descr>
+      </element><element name="TSCrollButton.Scrolling"><short>Set or unset text scrolling</short>
+      </element><element name="TSCrollButton.ScrollInterval"><short>Time between scrolling (ms)</short><descr>Time between scrolling steps in milliseconds. A short value means the text will scroll quickly.
+</descr>
+      </element><element name="TSCrollButton.ScrollAutoString"><short>String inserted between each text instances</short><descr>Srreing which is added between the end of the text and the begining of the new instance of the text in scrolling mode. default is '...'
+</descr>
+      </element><element name="TSCrollButton.ScrollGraph"><short>Smooth or coarse scrolling mode.</short><descr>If true, the text moves one pixel each scroll interval, producing a smooth scrolling. If false, the text moves one character each scroll interval, produiing a coarse scrolliing.
+</descr>
+      </element><element name="TSCrollButton.SCrollStep"><short>Number of pixels or characters moved each scroll interval</short>
+      </element><element name="TSCrollButton.SCrollDirection"><short>Scrolling from left to right or right to left.</short>
+      </element>
+    <element name="TColorPicker"><short>Colors choice similar to Components inspector (Colors combo box plus colors dialog button)</short><descr>Base colors, and their identifiers cannot be changed.<br/>
+  Selected text cannot be edited. To change the selected color, use the colors dialog
+  or paste a color with the popup menu. An invalid color is ignored.<br/>
+  Selected colours not in base colours are added at the end of the list.<br/>
+  Like base combo box, component height is related to the items height.<br/>
+  The colors dialog is localized by the operating system.
+</descr>
+      </element><element name="TColorPicker.ItemHeight"><short>The default height of an item in the drop-down for the control.</short><descr>Like base combo box, component height is related to the items height.
+</descr>
+      </element><element name="TColorPicker.ItemWidth"><short>The minimum width of the items in the drop-down list.</short><descr>The minimum width of the items in the drop-down list.
+</descr>
+      </element><element name="TColorPicker.MnuCopyCaption"><short>"Copy" menu item to copy the selected color to the clipboard</short>
+      </element><element name="TColorPicker.MnuPasteCaption"><short>"Paste" menu item to paste the selected color from the clipboard</short>
+      </element><element name="TColorPicker.Color"><short>Default selected color.</short><descr>Thiw is not the component color, but the default color selected and returned by the component.
+</descr>
+      </element><element name="TCheckBoxX"><short>Multifunction check box: colored square, cross, check mark, image.</short><descr>The checkbox can be customized: color, type of check, image...
+</descr>
+      </element><element name="TCheckBoxX.AllowGrayed"><short>Mimics the visual of disabled state.</short><descr>The contro; is not disabled. The user can use the component évents to customize the behaviour in this mode.
+</descr>
+      </element><element name="TCheckBoxX.CheckBoxType"><short>Type of check on the box</short><descr>cbBMP: Image<br/>
+cbBullet: Bullet<br/>
+cbCross: Cross (similar to classic checkbox)<br/>
+cbDiamond: Diamond<br/>
+cbMark: Mark<br/>
+cbRect: empty;
+
+
+
+</descr>
+      </element><element name="TCheckBoxX.CheckColor"><short>check square color</short>
+      </element><element name="TCheckBoxX.State"><short>Checkbox state </short><descr>cbChecked; checked state<br/>
+cbUnchecked: unchecked state<br/>
+cbGrayed: Grayed state
+</descr>
+      </element><element name="TTitlePanel"><short>Panel with a title like a GroupBox. Can change border color and title alignment</short><descr>Mimics a groupbox with a tile alignment property and customizable border line and color
+</descr>
+      </element><element name="TTitlePanel.BorderLine"><short>Box line type</short><descr>bsSingle: solid border<br/>
+bsNone: No border line
+</descr>
+      </element><element name="TTitlePanel.BorderColor"><short>Color of the box border</short>
+      </element><element name="TSignalMeter"><short>More responsive progress bar</short><descr>As it is more respopnsive than classic progress bar, the componzent can be used to show siognal leveles in real time.
+</descr>
+      </element>
+    </module>
+  </package>
+</fpdoc-descriptions>
