@@ -15,12 +15,6 @@
 For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks on the scale
 </descr>
       </element>
-      <element name="TbbTrackBar.GapMax">
-        <short>Space between the ruler bottom (vertical bbTrackBar) or right (horizontal bbTrackBar) and the component bottom or right</short>
-      </element>
-      <element name="TbbTrackBar.GapMin">
-        <short>Space between the component top (vertical bbTrackBar) or left (horizontal bbTrackBar) and the ruler top or left</short>
-      </element>
       <element name="TbbTrackBar.Max">
         <short>Maximum value of Position</short>
       </element>
@@ -32,10 +26,8 @@ For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks 
       </element>
       <element name="TbbTrackBar.Reversed">
         <short>Reverse the position of the slider on the ruler.</short>
-        <descr>
-          <b>False</b> (default): The slider moves from top to bottom (vertical orientation) or left to right (horizontal orientation)
-          <br/>
-          <b>True</b> : The slider moves from bottom to top (vertical orientation) or right to left (horizontal orientation)
+        <descr><b>False</b> (default): The slider moves from top to bottom (vertical orientation) or left to right (horizontal orientation)
+          <br/><b>True</b> : The slider moves from bottom to top (vertical orientation) or right to left (horizontal orientation)
 </descr>
       </element>
       <element name="TbbTrackBar.RulerBorderColor">
@@ -64,6 +56,9 @@ For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks 
       </element><element name="TbbTrackBar.Transparent"><short>The slider background is transparent</short>
       </element>
     <element name="TbbTrackBar.KeyIncrement"><short>Step value to change positoion when an arrow key is pressed</short>
+      </element>
+    <element name="TbbTrackBar.ColorParent"><short>The component color is changed to the Parent's color</short><descr>The ColorParent is not ParentColor. The parent color is applied to the compoent at design time and don't change if the Parent's color is changed at run time.
+</descr>
       </element>
     </module>
   </package>

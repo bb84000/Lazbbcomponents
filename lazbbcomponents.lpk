@@ -25,7 +25,7 @@ Extra components with properties unavailable in Lazarus/FPC native components
 **TbbTrackBar** : A customizable trackbar. Slider, ruler and scale colors can be changed (experimental)"/>
     <License Value="Open source
 Free to use"/>
-    <Version Major="1"/>
+    <Version Major="1" Release="1"/>
     <Files Count="3">
       <Item1>
         <Filename Value="lazbbcontrols.pas"/>
