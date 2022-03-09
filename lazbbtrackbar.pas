@@ -49,7 +49,8 @@ type
     Parent: TbbTrackBar;
     Shape: array of TPoint;                 // defines slider polygon
     Rectngl: TRect;                         // define sllider rectangle for mouse trap
-    //vOrigin, hOrigin: Integer;                     // Origin
+    //vOrigin, hOrigin: Integer;            // Origin
+    ScaleSize, GapMin: Integer;
     TopLeft: Tpoint;
     constructor create(aOwner: TbbTrackBar);
     destructor Destroy; override;
@@ -117,8 +118,6 @@ type
     procedure setMax(i: integer);
     procedure setFrequency(i: integer);
     procedure setKeyIncrement(i: integer);
-    //procedure setGapMin(i: Integer);
-    //procedure setGapMax(i: Integer);
     procedure setOrientation(tr: TTBarOrientation);
     procedure setReversed(b: boolean);
     procedure setColorParent(b: boolean);
@@ -150,15 +149,13 @@ type
     property OnPositionChange: TNotifyEvent read FOnPositionChange write FOnPositionChange;
     property BorderStyle;
     property enabled;
-    property color; //: TColor read GetColor write setColor;
+    property color;
     property Orientation: TTBarOrientation read FOrientation write setOrientation;
     property Reversed: Boolean read FReversed write setReversed default False;
     property Min: Integer read FMin write setMin;
     property Max: Integer read FMax write setMax;
     property Frequency: integer read FFrequency write setFrequency;
     property KeyIncrement: Integer read FKeyIncrement write setKeyIncrement;
-    //property GapMin: Integer read FGapMin write setGapMin;
-    //property GapMax: Integer read FGapMax write setGapMax;
     property Position: Integer read getPosition write setPosition default 0;
     property SliderColor: Tcolor read FSliderColor write setSliderColor;
     property SliderColorDown: TColor read FSliderColorDown write setSliderColorDown;
@@ -169,9 +166,10 @@ type
     property ScaleMarks: TSCaleMark read FScaleMarks write setScaleMarks;
     property ScaleColor: Tcolor read FScaleColor write setScaleColor;
     property ScaleSize: Integer read FScalesize write setScaleSize;
-     property Visible;
+    property Visible;
     property ColorParent: Boolean read FColorParent write SetColorParent;
     property TabOrder;
+    property ShowHint;
     property TabStop;
    end;
 
@@ -220,6 +218,7 @@ procedure TSlider.ReInit(origine: Boolean= false);
 begin
   if Forientation=tbVertical then
   begin
+    TopLeft:= Point(ScaleSize, GapMin);
     Rectngl.TopLeft:= point(0,0);
     Rectngl.BottomRight:= Point(20,10);
     case FMark of
@@ -230,12 +229,17 @@ begin
       tmBottomRight: begin
         shape:= [Point(2,0), Point(15,0), Point(20,5), Point(15,10), Point(2,10), Point(2,0)];
         Rectngl.TopLeft:= point(2,0);
+        TopLeft.X:= 0;
       end;
       tmBoth: shape:= [Point(0,5), Point(5,0), Point(15,0), Point(20,5), Point(15,10),  Point(5,10),  Point(0,5)] ;
-      tmNone: shape:= [Point(0,0), Point(0,10), Point(20,10), Point(20,0), Point(0,0)];
+      tmNone: begin
+        shape:= [Point(0,0), Point(0,10), Point(20,10), Point(20,0), Point(0,0)];
+        TopLeft.X:= 0;
+      end;
     end;
   end else
   begin
+    TopLeft:= Point(GapMin, ScaleSize);
     Rectngl.TopLeft:= point(0,0);
     Rectngl.BottomRight:= Point(10,20);
     case FMark of
@@ -246,9 +250,13 @@ begin
       tmBottomRight: begin
         shape:= [Point(0,2), Point(10,2), Point(10,15), Point(5,20), Point(0,15), Point(0,2)];
         Rectngl.TopLeft:= Point(0,2);
+        TopLeft.Y:= 0;
       end;
       tmBoth: shape:= [Point(0,5), Point(5,0), Point(10,5), Point(10,15), Point(5,20),  Point(0,15),  Point(0,5)];
-      tmNone: shape:= [Point(0,0), Point(10,0), Point(10,20), Point(0,20), Point(0,0)];
+      tmNone: begin
+        shape:= [Point(0,0), Point(10,0), Point(10,20), Point(0,20), Point(0,0)];
+        TopLeft.Y:= 0;
+      end;
     end;
   end;
   if origine then move(TopLeft);
@@ -323,9 +331,10 @@ begin
   brMargin:= 10;
   FGapMin:= 5;
   FGapMax:= 5;
-  Slider.TopLeft:= Point(FScaleSize, FGapMin);
-  FRulerSize:= 10;
   FScaleSize:= 5;
+  Slider.ScaleSize:= FScaleSize;
+  Slider.GapMin:= FGapMin;
+  FRulerSize:= 10;
   FFrequency:= 1;
   FKeyIncrement:= 1;
   OnChangeBounds:= @tbChangeBounds;
@@ -413,42 +422,6 @@ begin
   end;
 end;
 
-
-// Space between the component's top or left and the ruler's top or left
-
-{procedure TbbTrackBar.setGapMin(i: integer);
-begin
-  if FGapMin= i then exit;
-  if i<0 then
-  begin
-    raise ELayoutException.CreateFmt('Negative value %d not allowed.', [i]);
-    exit;
-  end;
-  FGapMin:= i;
-  ScaleChange;
-  Slider.ReInit(true);
-  setPosition(0);
-  Invalidate;
-
-end; }
-
-// Space between the component's bottom or right and the ruler's bottom or right
-
-{procedure TbbTrackBar.setGapMax(i: integer);
-begin
-  if FGapMax= i then exit;
-  if i<0 then
-  begin
-    raise ELayoutException.CreateFmt('Negative value %d not allowed.', [i]);
-    exit;
-  end;
-  FGapMax:= i;
-  ScaleChange;
-  Slider.ReInit(true);
-  setPosition(0);
-  Invalidate;
-
-end; }
 
 function TbbTrackBar.PixelsToPosition(px: Integer): Integer;
 begin
@@ -549,7 +522,7 @@ begin
   if FScaleMarks= tm then exit;
   FScaleMarks:= tm;
   Slider.Mark:= tm;
-
+  ScaleChange;
   PositionChange(FPosition);
   Invalidate;
 end;
@@ -563,6 +536,7 @@ begin
     exit;
   end;
   FscaleSize:= i;
+  Slider.ScaleSize:= FscaleSize;
   ScaleChange;
   Slider.ReInit(true);
   PositionChange(0);
@@ -681,7 +655,6 @@ begin
   if FColorParent= b then exit;
   FColorParent:= b;
   if FColorParent then setColor(GetColorResolvingParent);
-  //color:= GetColorResolvingParent; //Parent.Color;
   invalidate;
 end;
 
@@ -706,18 +679,14 @@ end;
 
 procedure TbbTrackBar.Scalechange;
 begin
-  Slider.TopLeft:= Point(FScaleSize, FGapMin);
   if FOrientation=tbVertical then
   begin
-    if (FScaleMarks=tmBottomRight) or (FScaleMarks=tmNone) then Slider.TopLeft.X:=0;
     topleftScale:= [0, FGapMin, FSCaleSize, Height-FGapMax];   // top or left scale
     botrightScale:= [20+Slider.TopLeft.X, FGapMin, 20+Slider.TopLeft.X+FSCaleSize, Height-FGapMax]; //Bottom or right scale
     Ruler.TopLeft:= Point(Slider.TopLeft.X+10-(RulerSize div 2), FGapMin);
     Ruler.BottomRight:= Point(Ruler.Left+FRulerSize+1, Height-FGapMax);
   end else
   begin
-    Slider.TopLeft:= Point(FGapMin, FScaleSize);
-    if (FScaleMarks=tmBottomRight) or (FScaleMarks=tmNone) then Slider.TopLeft.Y:= 0;
     topleftScale:= [FGapMin, 0, width-FGapMax, FScaleSize];   // top or left scale
     botrightScale:= [FGapMin, 20+Slider.TopLeft.Y, width-FGapMax, 20+Slider.TopLeft.Y+FScaleSize]; //Bottom or right scale
     Ruler.Left:= FGapMin;
@@ -846,7 +815,6 @@ begin
   else Col:= color;
   XMouse:= X;
   YMouse:= Y;
-  //if (not ParentColor) and (color= cldefault) then color:= clWhite;
   if Slider.Rectngl.Contains(Point(X, Y))then
   begin
      Slider.Paint(FSliderColorHover);
@@ -898,4 +866,5 @@ begin
 end;
 
 end.
+
 
