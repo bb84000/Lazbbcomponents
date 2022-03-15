@@ -11,9 +11,8 @@
       </element>
       <element name="TbbTrackBar.Frequency">
         <short>Indicates the frequency of tick marks displayed for the control.</short>
-        <descr>Divider of the Max-Min interval used to display a proper scale.<br/>
-For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks on the scale
-</descr>
+        <descr><p>Divider of the Max-Min interval used to display a proper scale.</p><p>For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks on the scale</p>
+        </descr>
       </element>
       <element name="TbbTrackBar.Max">
         <short>Maximum value of Position</short>
@@ -26,9 +25,8 @@ For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks 
       </element>
       <element name="TbbTrackBar.Reversed">
         <short>Reverse the position of the slider on the ruler.</short>
-        <descr><b>False</b> (default): The slider moves from top to bottom (vertical orientation) or left to right (horizontal orientation)
-          <br/><b>True</b> : The slider moves from bottom to top (vertical orientation) or right to left (horizontal orientation)
-</descr>
+        <descr><p><b>False</b> (default): The slider moves from top to bottom (vertical orientation) or left to right (horizontal orientation)</p><p><b>True</b> : The slider moves from bottom to top (vertical orientation) or right to left (horizontal orientation)</p>
+        </descr>
       </element>
       <element name="TbbTrackBar.RulerBorderColor">
         <short>Color of the ruler's border</short>
@@ -41,12 +39,8 @@ For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks 
       </element>
       <element name="TbbTrackBar.ScaleMarks">
         <short>Scale ticks disposition and shape.</short>
-        <descr>Same as classic TTrackbar TickMarks:
-<br/><b>tmTopLeft</b>: The slider's arrow is top oriented (horizontal scale on the top) or left oriented (vertical scale on the left)
-<br/><b>tmBottomRight</b>: The slider's arrow is bottom oriented (horizontal scale on the bottom ) or right oriented (horiziontal scale on the right)
-<br/><b>tmBoth</b>:There are two slider's arrows and two scales (one on  each side od the ruler
-<br/><b>tmNone</b>: No scales and no arrows.
-</descr>
+        <descr><p>Same as classic TTrackbar TickMarks:</p><p><b>tmTopLeft</b>: The slider's arrow is top oriented (horizontal scale on the top) or left oriented (vertical scale on the left)</p><p><b>tmBottomRight</b>: The slider's arrow is bottom oriented (horizontal scale on the bottom ) or right oriented (horiziontal scale on the right)</p><p><b>tmBoth</b>:There are two slider's arrows and two scales (one on  each side od the ruler</p><p><b>tmNone</b>: No scales and no arrows.</p>
+        </descr>
       </element>
     <element name="TbbTrackBar.ScaleSize"><short>Width of the scale (vertical bar) or heigth of the scale (horizontal bar)</short><descr>These are the width/ height of min, zero and max ticks. Other ticks are half this size
 </descr>
@@ -59,6 +53,18 @@ For instance, if Max-Min=100, use a Frequency divider of 10 to display 10 ticks 
       </element>
     <element name="TbbTrackBar.ColorParent"><short>The component color is changed to the Parent's color</short><descr>The ColorParent is not ParentColor. The parent color is applied to the compoent at design time and don't change if the Parent's color is changed at run time.
 </descr>
+      </element>
+    <element name="TbbTrackBar.SliderSize"><short>Slider thickness </short><descr>Slider thickness must be an even number, as the arrow must be in the exact slider middle
+</descr>
+      </element>
+    <element name="TbbTrackBar.OnPositionChange"><short>Event handler signalled when the Position of the slider has been changed. </short>
+      </element>
+    <element name="TbbTrackBar.FSliderBorderColor"><short>Border color of the slider in button mode</short>
+      </element>
+    <element name="TbbTrackBar.SliderStyle"><short>Select slider's style</short><descr><p><b>ssClassic</b>: Same as Lazarus TTrackbar;</p><p><b>ssButton</b>: "Button" like slider</p>
+        </descr>
+      </element><element name="TbbTrackBar.SliderBorderColor"><short>Slider's border color</short>
+      </element><element name="TbbTrackBar.RulerSize"><short>Ruler's thickness</short>
       </element>
     </module>
   </package>

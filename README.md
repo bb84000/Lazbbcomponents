@@ -9,7 +9,7 @@ __TSCrollLabel__ : Text scrolling label (TLabel descendant)<br>
 __TSignalMeter__ : A more responsive progress bar, allow real time audio signal strength<br>
 __TLFPTimer__ : FPTimer component<br> 
 __TitlePanel__ : A panel with groupbox like title. Title can be centered or left/right justified.<br>
-__TbbTrackBar__ : A customizable trackbar. Slider, ruler and scale colors can be changed (experimental)
+__TbbTrackBar__ : A customizable trackbar. Slider, ruler and scale colors can be changed. 
 
 # LazbbAstroComponents packet for Lazarus
 

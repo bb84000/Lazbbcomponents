@@ -7,6 +7,7 @@
     SliderColor: Slider default color
     SliderColorDown: Slider color on mouse button down
     SliderColorHover: Slider color on mouse cursor over
+    Slidersize : Slider's thickness
     RulerColor: Ruler color
     RulerBorderColor: Ruler border color
     RulerSize: Ruler thickness
@@ -31,35 +32,47 @@ uses
 
 type
 
-  TbbTrackBar = class;
+  TbbTrackBar = class;    // Forward declaration
 
   TTBarOrientation = (tbHorizontal, tbVertical);
   TScaleMark = (tmBottomRight, tmTopLeft, tmBoth, tmNone);
   TTickStyle = (tsNone, tsAuto, tsManual);
+  TSliderStyle= (ssClassic, ssButton);
   TTBarScalePos = (trLeft, trRight, trTop, trBottom);
+  TBtnState= (bsEnabled, bsDown, bsHover, bsDisabled, bsErase);
+
+  // TSCale : Scale class set and paint scale(s)
+
+  TSCale =class
+  private
+  protected
+  public
+    bmp: Tbitmap;
+    Parent: TbbTrackBar;
+    TopLeft, BotRight:  array of integer;
+    constructor create(aOwner: TbbTrackBar);
+    destructor Destroy; override;
+    procedure ReInit;
+    procedure Paint;
+  published
+  end;
 
   TSlider = class
   private
-    FOrientation: TTBarOrientation;
-    FMark: TScaleMark;
-    procedure setOrientation(tb: TTBarOrientation);
-    procedure setMark(tm: TScaleMark);
   protected
   public
     Parent: TbbTrackBar;
     Shape: array of TPoint;                 // defines slider polygon
+    BtnShape: array of TPoint;
     Rectngl: TRect;                         // define sllider rectangle for mouse trap
-    //vOrigin, hOrigin: Integer;            // Origin
-    ScaleSize, GapMin: Integer;
     TopLeft: Tpoint;
     constructor create(aOwner: TbbTrackBar);
     destructor Destroy; override;
     procedure ReInit(origine: Boolean= false);
+    procedure setShape;
     procedure Move(x, y: Integer; absol: Boolean= false);
     procedure Move(pt: Tpoint; absol: Boolean= false);
-    procedure Paint(col: TColor);
-    property Orientation: TTBarOrientation read FOrientation write setOrientation;
-    property Mark: TScaleMark read FMark write setMark;
+    procedure Paint(btnState: TBtnState);
   published
   end;
 
@@ -78,6 +91,9 @@ type
     FSliderColor: TColor;
     FSliderColorDown: Tcolor;
     FSliderColorHover: TColor;
+    FSliderSize: Integer;
+    FSliderStyle: TSliderStyle;
+    FSliderBorderColor: TColor;
     FRulerColor: TColor;
     FRulerBorderColor: Tcolor;
     FRulerSize: integer;
@@ -91,10 +107,10 @@ type
     FScaleColor: TColor;
     FFrequency: Integer;
     FKeyIncrement: Integer;
-    FGapMin, FGapMax: Integer;
     FOnPositionChange: TNotifyEvent;
     Slider: TSlider;
-     tlMargin, brMargin: Integer;
+    Scale: TSCale;
+    tlMargin, brMargin: Integer;
     MouseDwn: boolean;
     Xprev, Yprev: integer;
     Xdif, YDif: Integer;
@@ -108,6 +124,9 @@ type
     procedure setSliderColor(cl: TColor);
     procedure setSliderColorDown(cl: TColor);
     procedure setSliderColorHover(cl: TColor);
+    procedure setSliderSize(i: Integer);
+    procedure setSliderStyle(ss: TSliderStyle);
+    procedure setSliderBorderColor(cl: Tcolor);
     procedure setRulerColor(cl: Tcolor);
     procedure setRulerBorderColor(cl: Tcolor);
     procedure setRulerSize(i: integer);
@@ -121,12 +140,10 @@ type
     procedure setOrientation(tr: TTBarOrientation);
     procedure setReversed(b: boolean);
     procedure setColorParent(b: boolean);
-    function getColor: TColor;
-    procedure setColor(cl: Tcolor);
-    procedure ScaleChange;
+    //function getColor: TColor;
+    //procedure setColor(cl: Tcolor);
     procedure RulerChange;
     procedure PaintRuler;
-    procedure PaintScale;
     procedure PositionChange(p: integer);
     Function PositionToPixels(pos : Integer) : Integer;
     function PixelsToPosition(px: Integer): Integer;
@@ -140,6 +157,7 @@ type
     procedure MouseLeave; override;
     procedure KeyDown(var Key: Word; Shift: TShiftState);   override;
   public
+    GapMin, GapMax: Integer;
     property Canvas;
     constructor Create(aOwner: Tcomponent); override;
     destructor Destroy; override;
@@ -147,9 +165,8 @@ type
     procedure tbChangeBounds(Sender: TObject);
   published
     property OnPositionChange: TNotifyEvent read FOnPositionChange write FOnPositionChange;
-    property BorderStyle;
     property enabled;
-    property color;
+    property color; //: Tcolor read getcolor write setColor;
     property Orientation: TTBarOrientation read FOrientation write setOrientation;
     property Reversed: Boolean read FReversed write setReversed default False;
     property Min: Integer read FMin write setMin;
@@ -158,8 +175,11 @@ type
     property KeyIncrement: Integer read FKeyIncrement write setKeyIncrement;
     property Position: Integer read getPosition write setPosition default 0;
     property SliderColor: Tcolor read FSliderColor write setSliderColor;
+    property SliderBorderColor: Tcolor read FSliderBorderColor write setSliderBorderColor;
     property SliderColorDown: TColor read FSliderColorDown write setSliderColorDown;
     property SliderColorHover: TColor read FSliderColorHover write SetSliderColorHover;
+    property SliderSize: INteger read FSliderSize write setSliderSize;
+    property SliderStyle: TSliderStyle read FSliderStyle write setSliderStyle;
     property RulerColor: TColor read FRulerColor write setRulerColor;
     property RulerBorderColor: Tcolor read FRulerBorderColor write setRulerBorderColor;
     property RulerSize: Integer read FRulerSize write setRulerSize;
@@ -183,15 +203,86 @@ begin
   RegisterComponents('lazbbComponents',[TbbTrackBar]);
 end;
 
+// TSCale
+
+constructor TScale.create(aOwner: TbbTrackBar);
+begin
+  inherited Create;
+  Parent:= TbbTrackBar(aOwner);
+  ReInit;
+end;
+
+destructor TScale.Destroy;
+begin
+  inherited;
+end;
+
+procedure TScale.Reinit;
+begin
+  With Parent do
+  begin
+    if Orientation=tbVertical then
+    begin
+      // Add 1 px to scale size to be sure slider don't delete the scale
+      topleft:= [0, GapMin, ScaleSize, Height-GapMax];   // top or left scale
+      if ScaleMarks=tmBoth then botright:= [21+ScaleSize, GapMin, 21+ScaleSize*2, Height-GapMax]
+      else botright:= [21, GapMin, 21+ScaleSize, Height-GapMax]; //Bottom or right scale
+    end else
+    begin
+      topleft:= [GapMin, 0, width-GapMax, ScaleSize];   // top or left scale
+      if ScaleMarks=tmBoth then botright:= [GapMin, 21+ScaleSize, width-GapMax, 21+ScaleSize*2]
+      else  botright:= [GapMin, 21, width-GapMax, 21+ScaleSize]  ; //Bottom or right scale
+    end;
+  end;
+end;
+
+procedure TScale.Paint;
+  var
+  x1, y1, x2, y2: Integer;
+  i: Integer;
+  SliderMid: Integer;
+begin
+  Reinit;
+  With Parent do
+  begin
+    SliderMid:= SliderSize div 2 ;
+    Canvas.pen.style:= psSolid;
+    if not Enabled then Canvas.pen.Color:= $C4C4C4
+    else Canvas.pen.Color:= ScaleColor;
+    for i:=Min to Max  do
+    begin
+      if i mod Frequency =0 then
+      begin
+        y1:= PositionToPixels(i)+SliderMid;
+        if Orientation= tbVertical then
+        begin
+          // Paint top left scale
+          if (i=0) or (i=max) or (i=min) then x1:= topleft[0] else x1:= topleft[0]+(ScaleSize div 2);
+          if (i=0) or (i=max) or (i=min) then x2:= botright[2] else x2:= botright[2]-(ScaleSize div 2);
+          if (ScaleMarks=tmTopLeft) or (ScaleMarks=tmBoth) then  Canvas.Line(x1, y1, topleft[2], y1);
+          if (ScaleMarks=tmBottomRight) or (ScaleMarks=tmBoth) then Canvas.Line(botright[0], y1, x2, y1);
+        end else
+        begin
+          x1:= PositionToPixels(i)+SliderMid;
+          if (i=0) or (i=max) or (i=min) then y1:= topleft[1] else y1:= topleft[1]+(ScaleSize div 2);
+          if (i=0) or (i=max) or (i=min) then y2:= botright[3] else y2:= botright[3]-(ScaleSize div 2);
+          if (ScaleMarks=tmTopLeft) or (ScaleMarks=tmBoth) then Canvas.Line(x1, y1, x1, topleft[3] );
+          if (ScaleMarks=tmBottomRight) or (ScaleMarks=tmBoth) then Canvas.Line(x1, botright[1], x1 , y2);
+        end;
+      end;
+    end;
+    Canvas.pen.style:= psClear;
+  end;
+end;
+
 // TSlider
 
 constructor TSlider.create(aOwner: TbbTrackBar);
 begin
   inherited Create;
+  {$I sliders.lrs}
   Parent:= TbbTrackBar(aOwner);
   Rectngl:= TRect.Create(0,0,0,0);
-  FMark:= tmTopLeft;
-  FOrientation:= tbVertical;
   ReInit;
 end;
 
@@ -200,65 +291,116 @@ begin
   inherited;
 end;
 
-procedure TSlider.setOrientation(tb: TTBarOrientation);
+procedure TSlider.setShape;
+  var
+  Size: Integer;
+  SliderMid: Integer;
 begin
-  if FOrientation=tb then exit;
-  FOrientation:= tb;
-  ReInit;
-end;
+  Size:= Parent.SliderSize;
+  SliderMid:= Size div 2;
 
-procedure TSlider.setMark(tm: TScaleMark);
-begin
-  if FMark=tm then exit;
-  FMark:= tm;
-  ReInit;
+  if Parent.Orientation=tbVertical then
+  begin
+    case Parent.ScaleMarks of
+      tmTopLeft: begin
+        shape:= [Point(Rectngl.Left, Rectngl.Top+SliderMid), Point(Rectngl.Left+5,Rectngl.Top),
+                 Point(Rectngl.Right,Rectngl.Top), Rectngl.BottomRight,
+                 Point(Rectngl.Left+5,Rectngl.Bottom),  Point(Rectngl.Left,Rectngl.Top+SliderMid)];
+      end;
+      tmBottomRight: begin
+        shape:= [Rectngl.TopLeft, Point(Rectngl.Left+13,Rectngl.Top), Point(Rectngl.Right,Rectngl.Top+SliderMid),
+                 Point(Rectngl.Left+13,Rectngl.Bottom), Point(Rectngl.Left,Rectngl.Bottom), Rectngl.TopLeft];
+      end;
+      tmBoth: shape:= [Point(Rectngl.Left,Rectngl.Top+SliderMid), Point(Rectngl.Left+5,Rectngl.Top),
+                       Point(Rectngl.Left+15,Rectngl.Top), Point(Rectngl.Right,Rectngl.Top+SliderMid),
+                       Point(Rectngl.Left+15,Rectngl.Bottom),  Point(Rectngl.Left+5,Rectngl.Bottom),
+                       Point(Rectngl.Left,Rectngl.Top+SliderMid)] ;
+      tmNone: begin
+        shape:= [Rectngl.TopLeft, Point(Rectngl.Left,Rectngl.Bottom), Rectngl.BottomRight, Point(Rectngl.Right,Rectngl.Top), Rectngl.TopLeft];
+      end;
+    end;
+    BtnShape:= [Point(Rectngl.Left+1, Rectngl.Top+1), Point(Rectngl.Right+1, Rectngl.Bottom),     // 0 and 1: Butgton Rectangle;
+                Point(Rectngl.Left+1, Rectngl.Top), Point(Rectngl.Right, Rectngl.Top),            // 2 and 3: Button top line,
+                Point(Rectngl.Left, Rectngl.Top+1), Point(Rectngl.Left, Rectngl.Bottom-1),        // 4 and 5: Buttonleft line;
+                Point(Rectngl.Left+1, Rectngl.Bottom-1), Point(Rectngl.Right, Rectngl.Bottom-1),  // 6 and 7: Button 1st bottom line
+                Point(Rectngl.Right, Rectngl.Top+1), Point(Rectngl.Right, Rectngl.Bottom-1),      // 8 and 9: Button 1st right line;
+                Point(Rectngl.Left+3, Rectngl.Top+Rectngl.Height div 2),                          // 10 and 11 : index line;
+                Point(Rectngl.Right-2, Rectngl.Top+Rectngl.Height div 2)];
+  end else
+  begin
+    case Parent.ScaleMarks  of
+      tmTopLeft: begin
+        shape:= [Point(Rectngl.Left,Rectngl.Top+5), Point(Rectngl.Left+SliderMid,Rectngl.Top),
+                 Point(Rectngl.Right,Rectngl.Top+5), Rectngl.BottomRight,  Point(Rectngl.Left,Rectngl.Bottom),
+                 Point(Rectngl.Left,Rectngl.Top+5)];
+
+      end;
+      tmBottomRight: begin
+        shape:= [Rectngl.TopLeft, Point(Rectngl.Right,Rectngl.Top), Point(Rectngl.Right,Rectngl.Top+13),
+                 Point(Rectngl.Left+SliderMid,Rectngl.Top+18), Point(Rectngl.Left,Rectngl.Top+13), Rectngl.TopLeft];
+      end;
+      tmBoth: shape:= [Point(Rectngl.Left,Rectngl.Top+5), Point(Rectngl.Left+SliderMid,Rectngl.Top),
+                       Point(Rectngl.Right,Rectngl.Top+5), Point(Rectngl.Right,Rectngl.Top+15),
+                       Point(Rectngl.Left+SliderMid,Rectngl.Bottom), Point(Rectngl.Left,Rectngl.Top+15),
+                       Point(Rectngl.Left,Rectngl.Top+5)];
+      tmNone: begin
+        shape:= [Rectngl.TopLeft, Point(Rectngl.Right,Rectngl.Top), Point(Rectngl.Right,Rectngl.Bottom),
+                 Point(Rectngl.Left,Rectngl.Bottom), Rectngl.TopLeft];
+      end;
+    end;
+    BtnShape:= [Point(Rectngl.Left+1, Rectngl.Top+1), Point(Rectngl.Right, Rectngl.Bottom+1),     // 0 and 1: Butgton Rectangle;
+                Point(Rectngl.Left+1, Rectngl.Top), Point(Rectngl.Right-1, Rectngl.Top),            // 2 and 3: Button top line,
+                Point(Rectngl.Left, Rectngl.Top+1), Point(Rectngl.Left, Rectngl.Bottom),        // 4 and 5: Buttonleft line;
+                Point(Rectngl.Left+1, Rectngl.Bottom), Point(Rectngl.Right-1, Rectngl.Bottom),  // 6 and 7: Button 1st bottom line
+                Point(Rectngl.Right-1, Rectngl.Top+1), Point(Rectngl.Right-1, Rectngl.Bottom),      // 8 and 9: Button 1st right line;
+                Point(Rectngl.Left+Rectngl.Width div 2, Rectngl.Top+3),                           // 10 and 11 : index line;
+                Point(Rectngl.Left+Rectngl.Width div 2,  Rectngl.Bottom-2)];
+  end;
 end;
 
 procedure TSlider.ReInit(origine: Boolean= false);
+var
+  Size: Integer;
+  SliderMid: Integer;
 begin
-  if Forientation=tbVertical then
+  Size:= Parent.SliderSize;
+  SliderMid:= Size div 2;
+  if Parent.Orientation=tbVertical then
   begin
-    TopLeft:= Point(ScaleSize, GapMin);
+    TopLeft:= Point(Parent.ScaleSize, Parent.GapMin);
     Rectngl.TopLeft:= point(0,0);
-    Rectngl.BottomRight:= Point(20,10);
-    case FMark of
+    Rectngl.BottomRight:= Point(20,Size);
+    case Parent.ScaleMarks of
       tmTopLeft: begin
-        shape:= [Point(0,5), Point(5,0), Point(18,0), Point(18,10),  Point(5,10),  Point(0,5)];
-        Rectngl.BottomRight:= Point(18,10);
+        Rectngl.BottomRight:= Point(18,Size);
       end;
       tmBottomRight: begin
-        shape:= [Point(2,0), Point(15,0), Point(20,5), Point(15,10), Point(2,10), Point(2,0)];
         Rectngl.TopLeft:= point(2,0);
         TopLeft.X:= 0;
       end;
-      tmBoth: shape:= [Point(0,5), Point(5,0), Point(15,0), Point(20,5), Point(15,10),  Point(5,10),  Point(0,5)] ;
       tmNone: begin
-        shape:= [Point(0,0), Point(0,10), Point(20,10), Point(20,0), Point(0,0)];
         TopLeft.X:= 0;
       end;
     end;
   end else
   begin
-    TopLeft:= Point(GapMin, ScaleSize);
+    TopLeft:= Point(Parent.GapMin, Parent.ScaleSize);
     Rectngl.TopLeft:= point(0,0);
-    Rectngl.BottomRight:= Point(10,20);
-    case FMark of
+    Rectngl.BottomRight:= Point(Size,20);
+    case Parent.ScaleMarks  of
       tmTopLeft: begin
-        shape:= [Point(0,5), Point(5,0), Point(10,5), Point(10,18),  Point(0,18),  Point(0,5)];
-        Rectngl.BottomRight:= Point(10, 18);
+        Rectngl.BottomRight:= Point(Size, 18);
       end;
       tmBottomRight: begin
-        shape:= [Point(0,2), Point(10,2), Point(10,15), Point(5,20), Point(0,15), Point(0,2)];
         Rectngl.TopLeft:= Point(0,2);
         TopLeft.Y:= 0;
       end;
-      tmBoth: shape:= [Point(0,5), Point(5,0), Point(10,5), Point(10,15), Point(5,20),  Point(0,15),  Point(0,5)];
       tmNone: begin
-        shape:= [Point(0,0), Point(10,0), Point(10,20), Point(0,20), Point(0,0)];
         TopLeft.Y:= 0;
       end;
     end;
   end;
+  SetShape;
   if origine then move(TopLeft);
 end;
 
@@ -267,14 +409,8 @@ var
   i: Integer;
 begin
   if absol then ReInit;
-  // Move shape
-  for i:= 0 to high(shape) do
-  begin
-    shape[i].X:= shape[i].X+x;
-    shape[i].Y:= Shape[i].Y+y;
-  end;
-  // move Rectngl;
   Rectngl.Offset(x, y);
+  setShape;
 end;
 
 procedure TSlider.Move(pt: Tpoint; absol: Boolean= false);
@@ -283,31 +419,77 @@ begin
   Move(pt.x, pt.y, absol);
 end;
 
-procedure TSlider.Paint(col: TColor);
+procedure TSlider.Paint(BtnState: TbtnState);
 var
   PrevBrushStyle: TBrushStyle;
   PrevBrushColor: TColor;
   PrevPenStyle: TPenStyle;
   PrevPenColor: TColor;
+  col: TColor;
+  //BtnCol: TColor;
+  BorderCol: TColor;
 begin
-
-  // save current canvas settings
-  PrevBrushStyle:= Parent.Canvas.Brush.style;
-  PrevBrushColor:= Parent.Canvas.Brush.Color;
-  PrevPenStyle:= Parent.Canvas.Pen.Style;
-  PrevPenColor:= Parent.Canvas.pen.Color;
-  // paint slider shape
-  if not Parent.enabled then col:= $CCCCCC;
-  Parent.Canvas.Brush.Style:= bsSolid;
-  Parent.Canvas.brush.Color:= col;
-  Parent.Canvas.Pen.Style:= psSolid;
-  Parent.Canvas.Pen.Color:= col;
-  Parent.Canvas.Polygon(Shape);
-  // restore previous canvas settings
-  Parent.Canvas.Brush.Style:= PrevBrushStyle;
-  Parent.Canvas.brush.Color:= PrevBrushColor;
-  Parent.Canvas.Pen.Style:= PrevPenStyle;
-  Parent.Canvas.Pen.Color:= PrevPenColor;
+  BorderCol:= Parent.SliderBorderColor;
+  if (not Parent.enabled) or (BtnState=bsDisabled) then
+  begin
+    col:= $CCCCCC;
+    BorderCol:= $CCCCCC;
+  end;
+  if Parent.Color= clDefault then col:= clForm;
+  Case BtnState of
+    bsEnabled: col:= Parent.SliderColor;
+    bsDisabled: col:= $CCCCCC;
+    bsDown: col:= Parent.SliderColorDown;
+    bsHover: col:= Parent.SliderColorHover;
+    bsErase: begin
+      col:= Parent.Color;
+      if Parent.Color= clDefault then col:= clForm;
+    end;
+  end;
+  With Parent.Canvas do
+  begin
+    // save current canvas settings
+    PrevBrushStyle:= Brush.style;
+    PrevBrushColor:= Brush.Color;
+    PrevPenStyle:= Pen.Style;
+    PrevPenColor:= pen.Color;
+    // paint slider shape
+    if BtnState=bsErase then
+    begin
+      Brush.Style:= bsSolid;
+      brush.Color:= col;
+      Pen.Style:= psSolid;
+      Pen.Color:= col;
+      Rectangle(Rectngl.Left, Rectngl.Top, Rectngl.Left+Rectngl.Width+1, Rectngl.Top+Rectngl.Height+1);
+    end else
+    begin
+      if parent.SliderStyle= ssClassic then        // TTrackbar slider style
+      begin
+        Brush.Style:= bsSolid;
+        brush.Color:= col;
+        Pen.Style:= psSolid;
+        Pen.Color:= BorderCol;
+        Polygon(Shape);
+      end else
+      begin                                       // Slider style : button
+        Brush.Style:= bsSolid;
+        brush.Color:= col;
+        Rectangle(BtnShape[0].x, BtnShape[0].y, BtnShape[1].x, BtnShape[1].y);
+        Pen.Style:= psSolid;
+        Pen.Color:= BorderCol;
+        Line(BtnShape[2].x, BtnShape[2].y, BtnShape[3].x, BtnShape[3].y );
+        Line(BtnShape[4].x, BtnShape[4].y, BtnShape[5].x, BtnShape[5].y );
+        Line(BtnShape[6].x, BtnShape[6].y, BtnShape[7].x, BtnShape[7].y );
+        Line(BtnShape[8].x, BtnShape[8].y, BtnShape[9].x, BtnShape[9].y );
+        if not (Parent.ScaleMarks= tmNone) then Line (BtnShape[10].x, BtnShape[10].y, BtnShape[11].x, BtnShape[11].y );
+      end;
+    end;
+    // restore previous canvas settings
+    Brush.Style:= PrevBrushStyle;
+    brush.Color:= PrevBrushColor;
+    Pen.Style:= PrevPenStyle;
+    Pen.Color:= PrevPenColor;
+  end;
 end;
 
 // TbbTRackbar
@@ -319,6 +501,7 @@ begin
   ControlStyle := ControlStyle + [csParentBackground, csClickEvents,
     csCaptureMouse, csDoubleClicks, csRequiresKeyboardInput, csopaque];
   Slider:= TSlider.Create(self);
+  Scale:= TScale.Create(self);
   Width:= 30;
   Height:= 120;
   PrevWidth:=width;
@@ -329,11 +512,10 @@ begin
   FMax:= 10;
   tlMargin:= 5;
   brMargin:= 10;
-  FGapMin:= 5;
-  FGapMax:= 5;
+  GapMin:= 5;
+  GapMax:= 5;
+  FSliderSize:= 10;
   FScaleSize:= 5;
-  Slider.ScaleSize:= FScaleSize;
-  Slider.GapMin:= FGapMin;
   FRulerSize:= 10;
   FFrequency:= 1;
   FKeyIncrement:= 1;
@@ -341,18 +523,18 @@ begin
   FReversed:= false;
   //Default slider vertical, left
   FOrientation:= tbVertical;
-  Slider.Orientation:= tbVertical;
   FScaleMarks:=  tmTopLeft;
-  Slider.Mark:= tmTopLeft;
-  ScaleChange;
+  Scale.ReInit;
+  SliderStyle:= ssClassic;
   Slider.ReInit(true);
-  Xprev:= 5;
+  Xprev:= 0;
   Yprev:=0;
-  FSliderColor:= clMenuHighlight;
-  FSliderColorDown:= clActiveCaption;
-  FSliderColorHover:= clBlue;
-  FRulerColor:=clActiveBorder;;
-  FRulerBorderColor:= cl3DLight;
+  //FSliderColor:= clMenuHighlight;
+  //FSliderColorDown:= clActiveCaption;
+  //FSliderColorHover:= clBlue;
+  //FSliderBorderColor:= clActiveBorder;
+  FRulerColor:= cl3DLight;
+  FRulerBorderColor:= clActiveBorder;
   FScaleColor:= clGray;
   FColorParent:= false;
   Paint;
@@ -414,7 +596,6 @@ procedure TbbTrackBar.tbChangeBounds(Sender: TObject);
 begin
   if csDesigning in ComponentState then
   begin
-    ScaleChange;
     Slider.ReInit(true);
     if FOrientation= tbVertical then PositionChange(0) //SliderMove(Ruler.Top-5,FScaleSize)
     else PositionChange(0);
@@ -425,8 +606,8 @@ end;
 
 function TbbTrackBar.PixelsToPosition(px: Integer): Integer;
 begin
-  if FOrientation=tbVertical then result:= Round(((px-FGapMin)*(FMax-FMin))/(Height-FGapMin-FGapMax-10))
-  else result:= Round(((px-FGapMin)*(FMax-FMin))/(Width-FGapMin-FGapMax-10));
+  if FOrientation=tbVertical then result:= Round(((px-GapMin)*(FMax-FMin))/(Height-GapMin-GapMax-FSliderSize))
+  else result:= Round(((px-GapMin)*(FMax-FMin))/(Width-GapMin-GapMax-SliderSize));
   if Reversed then Result:= FMax-FMin-Result;
 end;
 
@@ -451,19 +632,23 @@ end;
 // Position value to absolute pixel position on component
 
 Function TbbTrackBar.PositionToPixels(pos : Integer) : Integer;
+var
+  SliderCourse: Integer;
 begin;
   result:= FScaleSize;
   if (pos<FMin) or (pos>FMax) then exit;
+  SliderCourse:= Height-GapMin-GapMax-SliderSize;
   pos:= pos-FMin;
   if FOrientation=tbVertical then
   begin
-    Result:= Round((pos*(Height-FGapMin-FGapMax-10))/(FMax-FMin))+FGapMin;
-    if Reversed then Result:= Height-Result-FGapMax-FGapMin;
+    SliderCourse:= Height-GapMin-GapMax-SliderSize;
+    Result:= GapMin+Round((Pos*SliderCourse)/(FMax-FMin));
+    if Reversed then Result:= Height-GapMax-SliderSize-Round((pos*SliderCourse)/(FMax-FMin));
   end else
   begin
-    Result:= Round((pos*(Width-FGapMin-FGapMax-10))/(FMax-FMin))+FGapMin;
-    if Reversed then Result:= Width-Result-FGapMax-FGapMin;
-  end;
+    SliderCourse:= Width-GapMin-GapMax-SliderSize;
+    Result:= GapMin+Round((Pos*SliderCourse)/(FMax-FMin));
+    if Reversed then Result:= Width-GapMax-SliderSize-Round((pos*SliderCourse)/(FMax-FMin));   end;
 end;
 
 procedure TbbTrackBar.PositionChange(p: integer);
@@ -501,8 +686,15 @@ begin
        (FOrientation=tbHorizontal) and (height>width) then
         SetBounds(left, top, height, width);
   end;
-  ScaleChange;
-  Slider.Orientation:= tr;
+  Slider.ReInit(true);
+  Positionchange(0);
+  Invalidate;
+end;
+
+procedure TbbTrackBar.setSliderSize(i: Integer);
+begin
+  if FSliderSize=1 then exit;
+  FSliderSize:= i;
   Slider.ReInit(true);
   Positionchange(0);
   Invalidate;
@@ -521,8 +713,6 @@ procedure TbbTrackBar.setScaleMarks(tm: TScaleMark);
 begin
   if FScaleMarks= tm then exit;
   FScaleMarks:= tm;
-  Slider.Mark:= tm;
-  ScaleChange;
   PositionChange(FPosition);
   Invalidate;
 end;
@@ -536,8 +726,6 @@ begin
     exit;
   end;
   FscaleSize:= i;
-  Slider.ScaleSize:= FscaleSize;
-  ScaleChange;
   Slider.ReInit(true);
   PositionChange(0);
   Invalidate;
@@ -553,7 +741,6 @@ begin
     exit;
   end;
   FRulerSize:= i;
-  ScaleChange;
   Slider.ReInit(true);
   PositionChange(0);
   Invalidate;
@@ -633,6 +820,33 @@ begin
   INvalidate;
 end;
 
+procedure TbbTrackBar.setSliderBorderColor(cl: TColor);
+begin
+  if FSliderBorderColor=cl then exit;
+  FSliderBorderColor:= cl;
+  Invalidate;
+end;
+
+procedure TbbTrackBar.setSliderStyle(ss: TSliderStyle);
+begin
+  if FSliderStyle= ss then exit;
+  FSliderStyle:= ss;
+  if Fsliderstyle=ssClassic then
+  begin
+    FSliderColor:=clHighlight;
+    FSliderColorHover:= clBlue;
+    FSliderColorDown:= clGradientInactiveCaption;
+    FSliderBorderColor:= clHighlight;
+  end else
+  begin
+    FSliderColor:= clBtnFace;
+    FSliderColorHover:= clBtnHighlight;
+    FSliderColorDown:= clGradientActiveCaption;
+    FSliderBorderColor:= clActiveBorder;
+  end;
+  INvalidate;
+end;
+
 procedure TbbTrackBar.setRulerColor(cl: Tcolor);
 begin
   if FRulerColor= cl then exit;
@@ -658,7 +872,7 @@ begin
   invalidate;
 end;
 
-function TbbTrackBar.getColor: TColor;
+{function TbbTrackBar.getColor: TColor;
 begin
   result:= inherited Color;
 end;
@@ -668,7 +882,7 @@ begin
   if Color=cl then exit;
   if Cl=clNone then Color:= clDefault else Color:=cl;
   invalidate;
-end;
+end;  }
 
 procedure TbbTrackBar.setScaleColor(cl: Tcolor);
 begin
@@ -677,71 +891,25 @@ begin
   Invalidate;
 end;
 
-procedure TbbTrackBar.Scalechange;
-begin
-  if FOrientation=tbVertical then
-  begin
-    topleftScale:= [0, FGapMin, FSCaleSize, Height-FGapMax];   // top or left scale
-    botrightScale:= [20+Slider.TopLeft.X, FGapMin, 20+Slider.TopLeft.X+FSCaleSize, Height-FGapMax]; //Bottom or right scale
-    Ruler.TopLeft:= Point(Slider.TopLeft.X+10-(RulerSize div 2), FGapMin);
-    Ruler.BottomRight:= Point(Ruler.Left+FRulerSize+1, Height-FGapMax);
-  end else
-  begin
-    topleftScale:= [FGapMin, 0, width-FGapMax, FScaleSize];   // top or left scale
-    botrightScale:= [FGapMin, 20+Slider.TopLeft.Y, width-FGapMax, 20+Slider.TopLeft.Y+FScaleSize]; //Bottom or right scale
-    Ruler.Left:= FGapMin;
-    Ruler.Top:= Slider.TopLeft.Y+10-(RulerSize div 2);          // Center ruler on slider median
-    Ruler.Right:= width-FGapMax;
-    Ruler.Bottom:= Ruler.top+FRulersize+1;
-  end;
-end;
-
 procedure TbbTrackBar.RulerChange;
 begin
   if FOrientation=tbVertical then
   begin
-
+    Ruler.TopLeft:= Point(Slider.TopLeft.X+10-(RulerSize div 2), GapMin);
+    Ruler.BottomRight:= Point(Ruler.Left+FRulerSize+1, Height-GapMax);
   end else
   begin
-
+    Ruler.Left:= GapMin;
+    Ruler.Top:= Slider.TopLeft.Y+10-(RulerSize div 2);          // Center ruler on slider median
+    Ruler.Right:= width-GapMax;
+    Ruler.Bottom:= Ruler.top+FRulersize+1;
   end;
 end;
 
-procedure TbbTrackBar.PaintScale;
-var
-  x1, y1, x2, y2: Integer;
-  i: Integer;
-begin
-    Canvas.pen.style:= psSolid;
-    if not Enabled then Canvas.pen.Color:= $C4C4C4
-    else Canvas.pen.Color:= FScaleColor;
-    for i:=Fmin to FMax  do
-    begin
-      if i mod FFrequency =0 then
-      begin
-        y1:= PositionToPixels(i)+5;
-        if Forientation= tbVertical then
-        begin
-          // Paint top left scale
-          if (i=0) or (i=Fmax) or (i=Fmin) then x1:= topleftScale[0] else x1:= topleftScale[0]+(ScaleSize div 2);
-          if (i=0) or (i=Fmax) or (i=Fmin) then x2:= botrightScale[2] else x2:= botrightScale[2]-(ScaleSize div 2);
-          if (FScaleMarks=tmTopLeft) or (FScaleMarks=tmBoth) then  Canvas.Line(x1, y1, topleftScale[2], y1);
-          if (FScaleMarks=tmBottomRight) or (FScaleMarks=tmBoth) then Canvas.Line(botrightScale[0], y1, x2, y1);
-        end else
-        begin
-          x1:= PositionToPixels(i)+5;
-          if (i=0) or (i=Fmax) or (i=Fmin) then y1:= topleftScale[1] else y1:= topleftScale[1]+(ScaleSize div 2);
-          if (i=0) or (i=Fmax) or (i=Fmin) then y2:= botrightScale[3] else y2:= botrightScale[3]-(ScaleSize div 2);
-          if (FScaleMarks=tmTopLeft) or (FScaleMarks=tmBoth) then Canvas.Line(x1, y1, x1, topleftScale[3] );
-          if (FScaleMarks=tmBottomRight) or (FScaleMarks=tmBoth) then Canvas.Line(x1, botrightScale[1], x1 , y2);
-        end;
-      end;
-    end;
-    Canvas.pen.style:= psClear;
-end;
 
 procedure TbbTrackBar.PaintRuler;
 begin
+  RulerChange;
   Canvas.pen.style:= psSolid;
   if not enabled then
   begin
@@ -761,12 +929,17 @@ procedure TbbTrackBar.paint;
 var
   col: TColor;
 begin
-  inherited Paint;
+  // Inherited nothing. We paint from scratch
   if Color=clNone then color:= clDefault;
-  ScaleChange;
-  PaintScale;
+  // Default color is wrong in design mode after a color change
+  if (csDesigning in ComponentState) and (color=clDefault) then
+  begin
+    Canvas.Brush.Color:= clform;
+    canvas.Rectangle(0,0, width, height);
+  end;
+  Scale.Paint;
   PaintRuler;
-  Slider.Paint(FSliderColor);
+  Slider.Paint(bsEnabled);
   if focused then
   begin
     canvas.Brush.style:= bsclear;
@@ -796,7 +969,7 @@ begin
   MouseDwn:=false;
   if not Slider.Rectngl.Contains(Point(X,Y)) then exit;
   MouseDwn:= true;
-  Slider.paint(FSliderColorDown);
+  Slider.paint(bsDown);
   Xprev:= X;
   Yprev:= Y;
   Xdif:= X-Slider.Rectngl.Left;
@@ -817,7 +990,7 @@ begin
   YMouse:= Y;
   if Slider.Rectngl.Contains(Point(X, Y))then
   begin
-     Slider.Paint(FSliderColorHover);
+     Slider.Paint(bsHover);
   end else
   begin
     MouseLeave;
@@ -825,23 +998,23 @@ begin
   if not MouseDwn then exit;
   Case FOrientation of
     tbVertical: begin
-      if ((Y-Ydif)<FGapMin) or ((Y-Ydif)>(height-FGapMax-10)) then exit;   // 10 is slider height
+      if ((Y-Ydif)<GapMin) or ((Y-Ydif)>(height-GapMax-SliderSize)) then exit;   // 10 is slider height
       X:= 0;
-      Slider.Paint(col);
+      Slider.Paint(bsErase);
       PaintRuler;
       dy:= Y-Yprev;
       Slider.Move(X, dy);
     end;
     tbHorizontal: begin
-      if ((X-Xdif)<FGapMin) or ((X-Xdif)>width-FGapMax-10) then exit;
+      if ((X-Xdif)<GapMin) or ((X-Xdif)>width-GapMax-SliderSize) then exit;
       Y:= 0;
-      Slider.Paint(col);
+      Slider.Paint(bsErase);
       PaintRuler;
       dx:= X-Xprev;
       Slider.Move(dx, Y);
     end;
   end;
-  Slider.Paint(FSliderColorDown);
+  Slider.Paint(bsDown);
   Xprev:= X;
   Yprev:= Y;
   Fposition:= getPosition;
@@ -852,7 +1025,7 @@ procedure TbbTrackBar.MouseUp(Button: TMouseButton; Shift:TShiftState; X, Y:Inte
 begin
   inherited;
   MouseDwn:= false;
-  Slider.Paint(SliderColor);
+  Slider.Paint(bsEnabled);
 end;
 
 procedure TbbTrackBar.MouseEnter;
@@ -862,7 +1035,7 @@ end;
 procedure TbbTrackBar.MouseLeave;
 begin
   inherited;
-  Slider.Paint(SliderColor);
+  Slider.Paint(bsEnabled);
 end;
 
 end.
