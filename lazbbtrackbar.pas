@@ -280,7 +280,6 @@ end;
 constructor TSlider.create(aOwner: TbbTrackBar);
 begin
   inherited Create;
-  {$I sliders.lrs}
   Parent:= TbbTrackBar(aOwner);
   Rectngl:= TRect.Create(0,0,0,0);
   ReInit;
@@ -361,10 +360,10 @@ end;
 procedure TSlider.ReInit(origine: Boolean= false);
 var
   Size: Integer;
-  SliderMid: Integer;
+  //SliderMid: Integer;
 begin
   Size:= Parent.SliderSize;
-  SliderMid:= Size div 2;
+  //SliderMid:= Size div 2;
   if Parent.Orientation=tbVertical then
   begin
     TopLeft:= Point(Parent.ScaleSize, Parent.GapMin);
@@ -405,8 +404,6 @@ begin
 end;
 
 procedure TSlider.Move(x, y: Integer; absol: Boolean= false);
-var
-  i: Integer;
 begin
   if absol then ReInit;
   Rectngl.Offset(x, y);
@@ -831,18 +828,21 @@ procedure TbbTrackBar.setSliderStyle(ss: TSliderStyle);
 begin
   if FSliderStyle= ss then exit;
   FSliderStyle:= ss;
-  if Fsliderstyle=ssClassic then
+  if csDesigning in ComponentState then
   begin
-    FSliderColor:=clHighlight;
-    FSliderColorHover:= clBlue;
-    FSliderColorDown:= clGradientInactiveCaption;
-    FSliderBorderColor:= clHighlight;
-  end else
-  begin
-    FSliderColor:= clBtnFace;
-    FSliderColorHover:= clBtnHighlight;
-    FSliderColorDown:= clGradientActiveCaption;
-    FSliderBorderColor:= clActiveBorder;
+    if Fsliderstyle=ssClassic then
+    begin
+      FSliderColor:=clHighlight;
+      FSliderColorHover:= clBlue;
+      FSliderColorDown:= clGradientInactiveCaption;
+      FSliderBorderColor:= clHighlight;
+    end else
+    begin
+      FSliderColor:= clBtnFace;
+      FSliderColorHover:= clBtnHighlight;
+      FSliderColorDown:= clGradientActiveCaption;
+      FSliderBorderColor:= clActiveBorder;
+    end;
   end;
   INvalidate;
 end;
@@ -926,8 +926,6 @@ begin
 end;
 
 procedure TbbTrackBar.paint;
-var
-  col: TColor;
 begin
   // Inherited nothing. We paint from scratch
   if Color=clNone then color:= clDefault;
