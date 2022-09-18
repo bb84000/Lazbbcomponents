@@ -8,7 +8,8 @@ unit lazbbcomponents;
 interface
 
 uses
-  lazbbcontrols, lazbbscrollcontrols, lazbbtrackbar, LazarusPackageIntf;
+  lazbbcontrols, lazbbscrollcontrols, lazbbtrackbar, lazbbOneInst, 
+  LazarusPackageIntf;
 
 implementation
 
@@ -17,6 +18,7 @@ begin
   RegisterUnit('lazbbcontrols', @lazbbcontrols.Register);
   RegisterUnit('lazbbscrollcontrols', @lazbbscrollcontrols.Register);
   RegisterUnit('lazbbtrackbar', @lazbbtrackbar.Register);
+  RegisterUnit('lazbbOneInst', @lazbbOneInst.Register);
 end;
 
 initialization

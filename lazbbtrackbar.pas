@@ -7,7 +7,8 @@
     SliderColor: Slider default color
     SliderColorDown: Slider color on mouse button down
     SliderColorHover: Slider color on mouse cursor over
-    Slidersize : Slider's thickness
+    Slidersize : Slider's thickness-1 px
+    SliderStyle : ssClassic: TTrackbar style; ssButton: Button like silider
     RulerColor: Ruler color
     RulerBorderColor: Ruler border color
     RulerSize: Ruler thickness
@@ -63,7 +64,7 @@ type
   public
     Parent: TbbTrackBar;
     Shape: array of TPoint;                 // defines slider polygon
-    BtnShape: array of TPoint;
+    BtnIndex: array of TPoint;              // Slider button shape
     Rectngl: TRect;                         // define sllider rectangle for mouse trap
     TopLeft: Tpoint;
     constructor create(aOwner: TbbTrackBar);
@@ -318,12 +319,7 @@ begin
         shape:= [Rectngl.TopLeft, Point(Rectngl.Left,Rectngl.Bottom), Rectngl.BottomRight, Point(Rectngl.Right,Rectngl.Top), Rectngl.TopLeft];
       end;
     end;
-    BtnShape:= [Point(Rectngl.Left+1, Rectngl.Top+1), Point(Rectngl.Right+1, Rectngl.Bottom),     // 0 and 1: Butgton Rectangle;
-                Point(Rectngl.Left+1, Rectngl.Top), Point(Rectngl.Right, Rectngl.Top),            // 2 and 3: Button top line,
-                Point(Rectngl.Left, Rectngl.Top+1), Point(Rectngl.Left, Rectngl.Bottom-1),        // 4 and 5: Buttonleft line;
-                Point(Rectngl.Left+1, Rectngl.Bottom-1), Point(Rectngl.Right, Rectngl.Bottom-1),  // 6 and 7: Button 1st bottom line
-                Point(Rectngl.Right, Rectngl.Top+1), Point(Rectngl.Right, Rectngl.Bottom-1),      // 8 and 9: Button 1st right line;
-                Point(Rectngl.Left+3, Rectngl.Top+Rectngl.Height div 2),                          // 10 and 11 : index line;
+    BtnIndex:= [Point(Rectngl.Left+3, Rectngl.Top+Rectngl.Height div 2),                          // index line;
                 Point(Rectngl.Right-2, Rectngl.Top+Rectngl.Height div 2)];
   end else
   begin
@@ -347,12 +343,7 @@ begin
                  Point(Rectngl.Left,Rectngl.Bottom), Rectngl.TopLeft];
       end;
     end;
-    BtnShape:= [Point(Rectngl.Left+1, Rectngl.Top+1), Point(Rectngl.Right, Rectngl.Bottom+1),     // 0 and 1: Butgton Rectangle;
-                Point(Rectngl.Left+1, Rectngl.Top), Point(Rectngl.Right-1, Rectngl.Top),            // 2 and 3: Button top line,
-                Point(Rectngl.Left, Rectngl.Top+1), Point(Rectngl.Left, Rectngl.Bottom),        // 4 and 5: Buttonleft line;
-                Point(Rectngl.Left+1, Rectngl.Bottom), Point(Rectngl.Right-1, Rectngl.Bottom),  // 6 and 7: Button 1st bottom line
-                Point(Rectngl.Right-1, Rectngl.Top+1), Point(Rectngl.Right-1, Rectngl.Bottom),      // 8 and 9: Button 1st right line;
-                Point(Rectngl.Left+Rectngl.Width div 2, Rectngl.Top+3),                           // 10 and 11 : index line;
+    BtnIndex:= [Point(Rectngl.Left+Rectngl.Width div 2, Rectngl.Top+3),                           // index line;
                 Point(Rectngl.Left+Rectngl.Width div 2,  Rectngl.Bottom-2)];
   end;
 end;
@@ -360,18 +351,16 @@ end;
 procedure TSlider.ReInit(origine: Boolean= false);
 var
   Size: Integer;
-  //SliderMid: Integer;
 begin
   Size:= Parent.SliderSize;
-  //SliderMid:= Size div 2;
   if Parent.Orientation=tbVertical then
   begin
     TopLeft:= Point(Parent.ScaleSize, Parent.GapMin);
     Rectngl.TopLeft:= point(0,0);
-    Rectngl.BottomRight:= Point(20,Size);
+    Rectngl.BottomRight:= Point(20,Size-1);
     case Parent.ScaleMarks of
       tmTopLeft: begin
-        Rectngl.BottomRight:= Point(18,Size);
+        Rectngl.BottomRight:= Point(18,Size-1);
       end;
       tmBottomRight: begin
         Rectngl.TopLeft:= point(2,0);
@@ -385,10 +374,10 @@ begin
   begin
     TopLeft:= Point(Parent.GapMin, Parent.ScaleSize);
     Rectngl.TopLeft:= point(0,0);
-    Rectngl.BottomRight:= Point(Size,20);
+    Rectngl.BottomRight:= Point(Size-1,20);
     case Parent.ScaleMarks  of
       tmTopLeft: begin
-        Rectngl.BottomRight:= Point(Size, 18);
+        Rectngl.BottomRight:= Point(Size-1, 18);
       end;
       tmBottomRight: begin
         Rectngl.TopLeft:= Point(0,2);
@@ -423,7 +412,6 @@ var
   PrevPenStyle: TPenStyle;
   PrevPenColor: TColor;
   col: TColor;
-  //BtnCol: TColor;
   BorderCol: TColor;
 begin
   BorderCol:= Parent.SliderBorderColor;
@@ -457,28 +445,20 @@ begin
       brush.Color:= col;
       Pen.Style:= psSolid;
       Pen.Color:= col;
-      Rectangle(Rectngl.Left, Rectngl.Top, Rectngl.Left+Rectngl.Width+1, Rectngl.Top+Rectngl.Height+1);
+      Rectangle(Rectngl.Left, Rectngl.Top, Rectngl.Right+1, Rectngl.Bottom+1);
     end else
     begin
+      Brush.Style:= bsSolid;
+      brush.Color:= col;
+      Pen.Style:= psSolid;
+      Pen.Color:= BorderCol;
       if parent.SliderStyle= ssClassic then        // TTrackbar slider style
       begin
-        Brush.Style:= bsSolid;
-        brush.Color:= col;
-        Pen.Style:= psSolid;
-        Pen.Color:= BorderCol;
         Polygon(Shape);
       end else
       begin                                       // Slider style : button
-        Brush.Style:= bsSolid;
-        brush.Color:= col;
-        Rectangle(BtnShape[0].x, BtnShape[0].y, BtnShape[1].x, BtnShape[1].y);
-        Pen.Style:= psSolid;
-        Pen.Color:= BorderCol;
-        Line(BtnShape[2].x, BtnShape[2].y, BtnShape[3].x, BtnShape[3].y );
-        Line(BtnShape[4].x, BtnShape[4].y, BtnShape[5].x, BtnShape[5].y );
-        Line(BtnShape[6].x, BtnShape[6].y, BtnShape[7].x, BtnShape[7].y );
-        Line(BtnShape[8].x, BtnShape[8].y, BtnShape[9].x, BtnShape[9].y );
-        if not (Parent.ScaleMarks= tmNone) then Line (BtnShape[10].x, BtnShape[10].y, BtnShape[11].x, BtnShape[11].y );
+        RoundRect(Rectngl.Left, Rectngl.Top, Rectngl.Right+1, Rectngl.Bottom+1, 2, 2);
+        if not (Parent.ScaleMarks= tmNone) then Line (BtnIndex[0].x, BtnIndex[0].y, BtnIndex[1].x, BtnIndex[1].y );
       end;
     end;
     // restore previous canvas settings
@@ -570,13 +550,13 @@ begin
     VK_PRIOR: if not (ssCtrl in Shift) then step:= -FFrequency;          // page Up always increase value
     VK_NEXT: if not (ssCtrl in Shift) then step:= FFrequency;            // page Down always decrease value
     VK_UP: if (not (ssCtrl in Shift)) and (FOrientation=tbVertical) then
-      if Reversed then step:= FKeyIncrement else step:= -FKeyIncrement;
+      if FReversed then step:= FKeyIncrement else step:= -FKeyIncrement;
     VK_DOWN: if (not (ssCtrl in Shift)) and (FOrientation=tbVertical) then
-      if Reversed then step:= -FKeyIncrement else step:= FKeyIncrement;
+      if FReversed then step:= -FKeyIncrement else step:= FKeyIncrement;
     VK_LEFT: if not (ssCtrl in Shift) and (FOrientation=tbHorizontal) then
-      if Reversed then step:= FKeyIncrement else step:= -FKeyIncrement;
+      if FReversed then step:= FKeyIncrement else step:= -FKeyIncrement;
     VK_RIGHT: if not (ssCtrl in Shift) and (FOrientation=tbHorizontal) then
-      if Reversed then step:= -FKeyIncrement else step:= FKeyIncrement;
+      if FReversed then step:= -FKeyIncrement else step:= FKeyIncrement;
   end;
   // check if we dont go out min and max limits
   if (Fposition+step>FMax) then setPosition(FMax) else
@@ -605,7 +585,7 @@ function TbbTrackBar.PixelsToPosition(px: Integer): Integer;
 begin
   if FOrientation=tbVertical then result:= Round(((px-GapMin)*(FMax-FMin))/(Height-GapMin-GapMax-FSliderSize))
   else result:= Round(((px-GapMin)*(FMax-FMin))/(Width-GapMin-GapMax-SliderSize));
-  if Reversed then Result:= FMax-FMin-Result;
+  if FReversed then Result:= FMax-FMin-Result;
 end;
 
 // get trackbar position from slider position
@@ -640,12 +620,12 @@ begin;
   begin
     SliderCourse:= Height-GapMin-GapMax-SliderSize;
     Result:= GapMin+Round((Pos*SliderCourse)/(FMax-FMin));
-    if Reversed then Result:= Height-GapMax-SliderSize-Round((pos*SliderCourse)/(FMax-FMin));
+    if FReversed then Result:= Height-GapMax-SliderSize-Round((pos*SliderCourse)/(FMax-FMin));
   end else
   begin
     SliderCourse:= Width-GapMin-GapMax-SliderSize;
     Result:= GapMin+Round((Pos*SliderCourse)/(FMax-FMin));
-    if Reversed then Result:= Width-GapMax-SliderSize-Round((pos*SliderCourse)/(FMax-FMin));   end;
+    if FReversed then Result:= Width-GapMax-SliderSize-Round((pos*SliderCourse)/(FMax-FMin));   end;
 end;
 
 procedure TbbTrackBar.PositionChange(p: integer);

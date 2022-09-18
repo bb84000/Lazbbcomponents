@@ -28,17 +28,17 @@ uses
   
 
 type
-TSCrollDirection= (sdLeftToRight, sdRightToLeft);
+TScrollDirection= (sdLeftToRight, sdRightToLeft);
 TBidiMod = (Disabled);
 
 TbbScrollButton = class(TSpeedButton)
   private
     FCaption: String;
     FScrolling: boolean;
-    FSCrollInterval: integer;
+    FScrollInterval: integer;
     FScrollAutoString:string;
     FScrollGraph: Boolean;
-    FSCrollStep: Integer;
+    FScrollStep: Integer;
     FScrollDirection: TSCrollDirection;
     FMargin: Integer;
     FBidiMode: TBidiMOd;
@@ -63,12 +63,12 @@ TbbScrollButton = class(TSpeedButton)
     procedure SetCaption(AValue: string);
     procedure SetMargin(AValue: integer);
     procedure SetSpacing(AValue: integer);
-    procedure SetSCrolling(AValue: Boolean);
-    procedure SetSCrollInterval(AValue:integer);
-    procedure SetSCrollAutoString(AValue:string);
-    procedure SetSCrollGraph(aValue: Boolean);
-    procedure SetSCrollStep(aValue:Integer);
-    procedure SetSCrollDirection(aValue: TSCrollDirection);
+    procedure SetScrolling(AValue: Boolean);
+    procedure SetScrollInterval(AValue:integer);
+    procedure SetScrollAutoString(AValue:string);
+    procedure SetScrollGraph(aValue: Boolean);
+    procedure SetScrollStep(aValue:Integer);
+    procedure SetScrollDirection(aValue: TSCrollDirection);
   protected
 
   public
@@ -81,21 +81,21 @@ TbbScrollButton = class(TSpeedButton)
     property Spacing: integer read FSpacing write SetSpacing default 4;
     property BidiMode: TBiDiMod read FBidiMode default disabled;
     property Scrolling: Boolean read FScrolling write SetScrolling default false;
-    property ScrollInterval: Integer read FSCrollInterval write SetSCrollInterval default 50;
-    property ScrollAutoString: string read FScrollAutoString write SetSCrollAutoString;
+    property ScrollInterval: Integer read FScrollInterval write SetScrollInterval default 50;
+    property ScrollAutoString: string read FScrollAutoString write SetScrollAutoString;
     property ScrollGraph: Boolean read FScrollGraph write SetScrollGraph default true;
-    property SCrollStep: Integer read FScrollStep write SetScrollStep default 1;
-    property SCrollDirection: TSCrollDirection read FSCrollDirection write SetSCrollDirection default sdLeftToRight;
+    property ScrollStep: Integer read FScrollStep write SetScrollStep default 1;
+    property ScrollDirection: TScrollDirection read FScrollDirection write SetScrollDirection default sdLeftToRight;
   end;
  
 TbbScrollLabel = class(TLabel)
   private
     FCaption: String;
     FScrolling: boolean;
-    FSCrollInterval: integer;
+    FScrollInterval: integer;
     FScrollAutoString:string;
     FScrollGraph: Boolean;
-    FSCrollStep: Integer;
+    FScrollStep: Integer;
     FScrollDirection: TSCrollDirection;
     FMargin: Integer;
     FBidiMode: TBiDiMod;  // Disable the property
@@ -120,12 +120,12 @@ TbbScrollLabel = class(TLabel)
     procedure OnTimerCanvas(Sender:Tobject);
     procedure SetCaption(AValue: string);
     procedure SetMargin(AValue: integer);
-    procedure SetSCrolling(AValue: Boolean);
-    procedure SetSCrollInterval(AValue:integer);
-    procedure SetSCrollAutoString(AValue:string);
-    procedure SetSCrollGraph(aValue: Boolean);
-    procedure SetSCrollStep(aValue:Integer);
-    procedure SetSCrollDirection(aValue: TSCrollDirection);
+    procedure SetScrolling(AValue: Boolean);
+    procedure SetScrollInterval(AValue:integer);
+    procedure SetScrollAutoString(AValue:string);
+    procedure SetScrollGraph(aValue: Boolean);
+    procedure SetScrollStep(aValue:Integer);
+    procedure SetScrollDirection(aValue: TScrollDirection);
   protected
 
   public
@@ -137,11 +137,11 @@ TbbScrollLabel = class(TLabel)
     property Margin: integer read FMargin write SetMargin default 0;
     property BidiMode: TBiDiMod read FBidiMode default disabled;
     property Scrolling: Boolean read FScrolling write SetScrolling default true;
-    property ScrollInterval: Integer read FSCrollInterval write SetSCrollInterval default 50;
-    property ScrollAutoString: string read FScrollAutoString write SetSCrollAutoString;
+    property ScrollInterval: Integer read FScrollInterval write SetScrollInterval default 50;
+    property ScrollAutoString: string read FScrollAutoString write SetScrollAutoString;
     property ScrollGraph: Boolean read FScrollGraph write SetScrollGraph default true;
-    property SCrollStep: Integer read FScrollStep write SetScrollStep default 1;
-    property SCrollDirection: TSCrollDirection read FSCrollDirection write SetSCrollDirection default sdLeftToRight;
+    property ScrollStep: Integer read FScrollStep write SetScrollStep default 1;
+    property ScrollDirection: TScrollDirection read FScrollDirection write SetScrollDirection default sdLeftToRight;
   end; 
   
 procedure Register;

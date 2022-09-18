@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fpdoc-descriptions><package name="lazbbcomponents"><module name="lazbbscrollcontrols"><element name="TbbScrollButton"><short>Button with scrolling caption (TSpeedbutton descendant)</short>
+      </element>
+    <element name="TbbScrollButton.BidiMode"><short>Property disabled</short><descr>Property disabled for this control
+</descr>
+      </element><element name="TbbScrollButton.Scrolling"><short>Set or unset text scrolling</short>
+      </element><element name="TbbScrollButton.ScrollInterval"><short>Time between scrolling (ms)</short><descr>Time between scrolling steps in milliseconds. A short value means the text will scroll quickly.
+</descr>
+      </element><element name="TbbScrollButton.ScrollAutoString"><short>String inserted between each text instances</short><descr>String which is added between the end of the text and the begining of the new instance of the text in scrolling mode. Default is '...'
+</descr>
+      </element><element name="TSbbcrollButton.ScrollGraph"><short>Smooth or coarse scrolling mode.</short><descr>If true, the text moves one pixel each scroll interval, producing a smooth scrolling. If false, the text moves one character each scroll interval, produiing a coarse scrolliing.
+</descr>
+      </element><element name="TbbScrollButton.ScrollStep"><short>Number of pixels or characters moved each scroll interval</short>
+      </element><element name="TbbScrollButton.ScrollDirection"><short>Scrolling from left to right or right to left.</short>
+      </element>
+    <element name="TbbScrollButton.ScrollGraph"><short>Pixel scrolling or character scrolling</short><descr><p><b>True</b>: Pixels scrolling. Scrolling is smoother than character one.</p><p><b>False</b>: Characters scrolling. Can be sued qith fixed size fonts.</p>
+        </descr>
+      </element><element name="TbbScrollLabel"><short>Label with scrolling text</short>
+      </element><element name="TbbScrollLabel.BidiMode"><short>Property disabled</short><descr>Property disabled for this control
+</descr>
+      </element>
+      <element name="TbbScrollLabel.Scrolling"><short>Set or unset text scrolling</short>
+      </element>
+      <element name="TbbScrollLabel.ScrollInterval"><short>Time between scrolling (ms)</short><descr>Time between scrolling steps in milliseconds. A short value means the text will scroll quickly.
+</descr>
+      </element><element name="TbbScrollLabel.ScrollAutoString"><short>String inserted between each text instances</short><descr>String which is added between the end of the text and the begining of the new instance of the text in scrolling mode. Default is '...'
+</descr>
+      </element><element name="TbbScrollLabel.ScrollGraph"><short>Smooth or coarse scrolling mode.</short><descr>If true, the text moves one pixel each scroll interval, producing a smooth scrolling. If false, the text moves one character each scroll interval, produiing a coarse scrolliing.
+</descr>
+      </element><element name="TbbScrollLabel.ScrollStep"><short>Number of pixels or characters moved each scroll interval</short>
+      </element>
+ <element name="TbbScrollLabel.ScrollDirection"><short>Scrolling from left to right or right to left.</short>
+      </element>
+    </module>
+  </package>
+</fpdoc-descriptions>

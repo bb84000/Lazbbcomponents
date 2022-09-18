@@ -1,18 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<fpdoc-descriptions><package name="lazbbcomponents"><module name="lazbbcontrols"><element name="TSCrollButton"><short>Text scrolling button (TSpeedbutton descendant)</short>
-      </element>
-    <element name="TSCrollButton.BidiMode"><short>Property disabled</short><descr>Property disabled for this control
-</descr>
-      </element><element name="TSCrollButton.Scrolling"><short>Set or unset text scrolling</short>
-      </element><element name="TSCrollButton.ScrollInterval"><short>Time between scrolling (ms)</short><descr>Time between scrolling steps in milliseconds. A short value means the text will scroll quickly.
-</descr>
-      </element><element name="TSCrollButton.ScrollAutoString"><short>String inserted between each text instances</short><descr>Srreing which is added between the end of the text and the begining of the new instance of the text in scrolling mode. default is '...'
-</descr>
-      </element><element name="TSCrollButton.ScrollGraph"><short>Smooth or coarse scrolling mode.</short><descr>If true, the text moves one pixel each scroll interval, producing a smooth scrolling. If false, the text moves one character each scroll interval, produiing a coarse scrolliing.
-</descr>
-      </element><element name="TSCrollButton.SCrollStep"><short>Number of pixels or characters moved each scroll interval</short>
-      </element><element name="TSCrollButton.SCrollDirection"><short>Scrolling from left to right or right to left.</short>
-      </element>
+<fpdoc-descriptions><package name="lazbbcomponents"><module name="lazbbcontrols">
+
     <element name="TColorPicker"><short>Colors choice similar to Components inspector (Colors combo box plus colors dialog button)</short><descr>Base colors, and their identifiers cannot be changed.<br/>
   Selected text cannot be edited. To change the selected color, use the colors dialog
   or paste a color with the popup menu. An invalid color is ignored.<br/>
