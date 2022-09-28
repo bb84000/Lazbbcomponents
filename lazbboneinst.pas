@@ -32,7 +32,7 @@ type
     IPCServer: TSimpleIPCServer;
     IPCClient: TSimpleIPCClient;
     {$ifdef mswindows}
-      procedure MessageQueued(Sender: TObject);
+    procedure MessageQueued(Sender: TObject);
     {$else} {unix}
     procedure receivemessage(Sender: TObject); {receive paramstr(1) from second instance prior to termination}
     {$endif}
@@ -68,8 +68,6 @@ begin
   inherited Create(AOwner);
   FUpdateInterval := 1000;
 end;
-
-
 
 {$ifdef mswindows}
 procedure TbbOneInst.MessageQueued(Sender: TObject);

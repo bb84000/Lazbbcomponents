@@ -10,7 +10,8 @@ __TSignalMeter__ : A more responsive progress bar, allow real time audio signal 
 __TLFPTimer__ : FPTimer component<br> 
 __TitlePanel__ : A panel with groupbox like title. Title can be centered or left/right justified.<br>
 __TbbTrackBar__ : A customizable trackbar. Slider, ruler and scale colors can be changed.<br>
-__TbbOneInst__ : Prevents execution of a second instance of the application (can use a command line parameter to allow different instances to run).  
+__TbbOneInst__ : Prevents execution of a second instance of the application (can use a command line parameter to allow different instances to run).<br>
+__TbbOsVersion__ : Retrieve OS version and information. Replace lazbbosver unit.
 
 # LazbbAstroComponents packet for Lazarus
 
@@ -22,4 +23,4 @@ __TSeasons__ Give seasons date for a selected date
 Please see Wiki pages for more details;
 
 Free use.<br>
-bb - sdtp - march 2022
+bb - sdtp - september 2022

@@ -5,11 +5,13 @@
     <Name Value="lazbbcomponents"/>
     <Type Value="RunAndDesignTime"/>
     <AddToProjectUsesSection Value="True"/>
-    <Author Value="bb - sdtp -march 2022"/>
+    <Author Value="bb - sdtp - september 2022"/>
+    <AutoUpdate Value="OnRebuildingAll"/>
     <CompilerOptions>
       <Version Value="11"/>
       <PathDelim Value="\"/>
       <SearchPaths>
+        <OtherUnitFiles Value="..\..\lazbbunits"/>
         <UnitOutputDirectory Value="lib\$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
     </CompilerOptions>
@@ -24,11 +26,12 @@ Extra components with properties unavailable in Lazarus/FPC native components
 **TLFPTimer** : FPTimer component&lt;br> 
 **TitlePanel** : Panel with a title like a GroupBox. Can change border color and title alignment&lt;br>
 **TbbTrackBar** : A customizable trackbar. Slider, ruler and scale colors can be changed &lt;br>
-**TbbOneInst** : Prevents execution of a second instance of the application (can use a command line parameter to allow different instances to run. "/>
+**TbbOneInst** : Prevents execution of a second instance of the application (can use a command line parameter to allow different instances to run. &lt;br>
+**TbbOsVersion**: Provide OS informations."/>
     <License Value="Open source
 Free to use"/>
-    <Version Major="1" Release="2" Build="4"/>
-    <Files Count="4">
+    <Version Major="1" Release="2" Build="6"/>
+    <Files Count="6">
       <Item1>
         <Filename Value="lazbbcontrols.pas"/>
         <HasRegisterProc Value="True"/>
@@ -49,6 +52,15 @@ Free to use"/>
         <HasRegisterProc Value="True"/>
         <UnitName Value="lazbbOneInst"/>
       </Item4>
+      <Item5>
+        <Filename Value="lazbbosversion.pas"/>
+        <HasRegisterProc Value="True"/>
+        <UnitName Value="lazbbOsVersion"/>
+      </Item5>
+      <Item6>
+        <Filename Value="lazbbosversionbase.pas"/>
+        <UnitName Value="lazbbosversionbase"/>
+      </Item6>
     </Files>
     <CompatibilityMode Value="True"/>
     <LazDoc Paths="doc"/>

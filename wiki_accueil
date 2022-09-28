@@ -1,0 +1,30 @@
+# Composants Lazarus 
+
+[Goto English home page](https://github.com/bb84000/Lazbbcomponents/wiki/)<br>
+
+## [Paquet LazbbComponents](https://github.com/bb84000/Lazbbcomponents/wiki/Controls_fr) <br>
+
+Composants supplémentaires ayant des propriétés non disponibles dsans ceux de Lazarus/FPC  
+
+**TCheckBoxX** :  Case à cocher multifonctions : carré coloré, croix, coche, image.<br> 
+**TColorPicker** : Choix de couleurs similaire à celui de l'inspecteur de composants
+               (combo box de couleurs plus bouton d'appel du dialogue de couleurs)<br>
+**TSCrollButton** : Bouton à défilement de texte (Descendant de TSpeedbutton)<br>
+**TSCrollLabel** : Label à défilement de texte (Descendant de TLabel)<br>
+**TSignalMeter** : Une barre de progression plus rapide, permet la visualisation en temps réel du niveau d'un signal audio<br>
+**TLFPTimer** : Composant FPTimer<br> 
+**TitlePanel** : Panel avec un titre comme une GroupBox. Couleur de bordure et alignement du titre modifiables<br> 
+**TbbTrackBar** : Un trackbar personnalisable. Couleurs de bouton, règle, échelle modifiables<br>
+**TbbOneInst** : Empêche l'exécution d'une seconde instance de l'application (Peut utiliser un paramètre de ligne de commande pour permettre à des différentes instances de s'exécuter).<br> 
+**TbbOsVersion** : Récupère la version et les informations de l'OS. Remplace l'unité lazbbosver.
+
+## [Paquet LazbbAstroComponents](https://github.com/bb84000/Lazbbcomponents/wiki/Astro_fr) <br>
+
+**TSuntime** : Fournit les heures de lever, de zénith et de coucher du soleil pour une date donnée.<br>
+**TMoonphases** : Fournit les phases de la lune, avec les heures d'apparition, pour une année donnée<br>
+**TSeasons** : Fournit les saisons de l'année séllectionnée<br>
+**TEaster** : Fournit les dates de Paques, de son Lundi, de l'Ascension, de la Pentecôte et de son lundi 
+             
+Utilisation libre.
+
+bb - sdtp - septembre 2022

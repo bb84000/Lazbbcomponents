@@ -9,7 +9,7 @@ interface
 
 uses
   lazbbcontrols, lazbbscrollcontrols, lazbbtrackbar, lazbbOneInst, 
-  LazarusPackageIntf;
+  lazbbOsVersion, lazbbosversionbase, LazarusPackageIntf;
 
 implementation
 
@@ -19,6 +19,7 @@ begin
   RegisterUnit('lazbbscrollcontrols', @lazbbscrollcontrols.Register);
   RegisterUnit('lazbbtrackbar', @lazbbtrackbar.Register);
   RegisterUnit('lazbbOneInst', @lazbbOneInst.Register);
+  RegisterUnit('lazbbOsVersion', @lazbbOsVersion.Register);
 end;
 
 initialization

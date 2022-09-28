@@ -3,7 +3,7 @@
 </descr>
       </element><element name="TbbOneInst.Identifier"><short>A unique string defining the application.</short><descr>A unique string defining the application. Use a GUID to be sure no other application can have the same identifier. If no identifier is provided, the executable name is used.
 </descr>
-      </element><element name="TbbOneInst.UseParameter"><short>Enable to distinguish between several instances launched with different parameters</short><descr>Default <b>False</b>. Allow simultaneous execution of the same application wwhith differeent command line parameters.
+      </element><element name="TbbOneInst.UseParameter"><short>Enable to distinguish between several instances launched with different parameters</short><descr>Default <b>False</b>. Allow simultaneous execution of the same application whith differeent command line parameters.
 </descr>
       </element><element name="TbbOneInst.UpdateInterval"><short>Default <b>1000</b>ms.</short><descr>With non-windows OS, polling interval to retreive message from second instance
 </descr>
