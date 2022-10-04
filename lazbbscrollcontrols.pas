@@ -549,7 +549,7 @@ end;
 
 procedure TbbScrollLabel.ReInit;
 var
-  bkColor, FntColor: TColor;
+  bkColor: TColor;
 begin
   if csDesigning in ComponentState then exit;
   inherited Caption:= '';   // avoid some flickering

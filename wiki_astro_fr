@@ -1,0 +1,59 @@
+# Paquet LazbbComponents<br>
+
+[Goto packet English page](https://github.com/bb84000/Lazbbcomponents/wiki/Astro_en)<br>
+
+**TSuntime** : Fournit les heures de lever, de zénith et de coucher du soleil pour une date donnée.<br>
+**TMoonphases** : Fournit les phases de la lune, avec les heures d'apparition, pour une année donnée 
+**TSeasons** : Fournit les saisons de l'année séllectionnée<br>
+**TEaster** : Fournit les dates de Paques, de son Lundi, de l'Ascension, de la Pentecôte et de son lundi 
+
+
+### Propriétés de TSuntime
+
+   **Sundate** (TDateTime) : Jour sélectionné<br>
+   **TimeZone** (Double) : Décalage horaire en heures<br>
+   **Latitude** (Double) : Latitude en degrés décimaux (N : positive, S : négative)<br>
+   **Longitude** (Double) : Longitude en degrés décimaux (E : positive, O : négative)<br>
+   **Altitude** (Integer) : Pas encore implémenté<br>
+   **TypeSun** (TSunrise) : Type de lever/coucher: standard, civil, nautic ou astro<br>
+   **Sunrise** (TDateTime) : Lever du soleil à la date sélectionnée (Sundate)<br>
+   **Sunset** (TDateTime) : Coucher du soleil<br>
+   **SunNoon** (TDateTime) : Soleil au zénith
+
+### Propriétés de TMoonphases
+
+   **Moonyear** (Integer) : Année choisie pour les phases de la lune<br>
+   **TimeZone** (Double) : Décalage horaire en heures<br>
+   **Moondate** (TDateTime) : Date choisie pour la fonction isMoon<br>
+   **Moondays** (TMoonDays) : Array de 56 ou 112 TMoonRecords contenant les phases de la lune pour l'année Moonyear<br>
+   **MoonImages** (TImageList): Liste de 8 images de lune dans l'ordre indiqué à la valeur MType<br>
+   **Crescent** (Boolean) : _True_, la liste a 8 phases et 112 dates et heures ; _False_, la liste a 4 phases et 56 dates et heures<br>
+   **isMoon function** (TMoonRecord) : Retourne un Tmoonrecord s'il y a une phase au jour Moondate, sinon retourne une date invalide dans le champ MDays<br>
+   **TMoonRecord**<br>
+      _MDays_ (TDateTime) : date et heure de la phase de la lune Moonphase, o une date invalide (01/01/0001) si non trouvé<br>
+      _MType_ (String) : En anglais : New Moon, Waxing crescent, First quarter, Waxing gibbous,
+                      Full moon, Waning gibbous, third/last quarter, Waning crescent<br>
+      _MIndex_ (Integer) : 0 (NM) à 7 (WC) Sert à accéder à MoonImages et/ou personnaliser l'application<br>
+	 
+### Propriétés de TSeasons
+
+   **Seasyear** (Integer) : Année choisie pour les saisons<br>
+   **Timezone** (Double) :   Décalage horaire en heures<br>
+   **SpringDate** (TDateTime) : Date du printemps<br>
+   **SummerDate** (TdateTime) : Date de l'été<br>
+   **AutumnDate** (TdateTime) : Date de l'automne<br>
+   **WinterDate** (TDateTime) : Date de l'hiver
+   
+### Propriétés de TEaster
+
+   **EasterYear** (Integer) : Année choisie pour Paques<br>
+   **InvalidYear** (Boolean) : Valeur de retour si l'année est invalide<br>
+   **Easterdate** (TDateTime) : Date de Paques<br>
+   **EasterMondaydate** (TDateTime): Date du Lundi de Paques<br>
+   **Ascensdate** (TDateTime) : Date de l'Ascension<br>
+   **Pentecdate** (TDateTime) : Date de la Pentecôte<br>
+   **PentecMondaydate** (TDateTime) : Date du lundi de pentecôte
+                 
+Utilisation libre.
+
+bb - sdtp - mai 2021   

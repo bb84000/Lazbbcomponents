@@ -1,7 +1,7 @@
 {******************************************************************************
  lazbbosversion - Returns OS version information (Windows, Linux and Mac
  Component version, replace previous units
- sdtp - bb - september 2022
+ sdtp - bb - october 2022
  Some windows functions and windows structures are dynamically loaded in
    lazbbosversiobnabse unit
  Localization data in application .lng file
@@ -19,13 +19,11 @@ uses
   {$ELSE}
     process,
   {$ENDIF}
-  Classes, SysUtils, LResources, lazbbutils, Forms, Controls, Graphics, Dialogs,
-  lazbbosversionbase;
+  Classes, SysUtils, LResources, lazbbosversionbase, Dialogs;
 
 type
   TbbOsVersion = class(TComponent)
   private
-    //fProdStr: TStrings ;
     FPID : Integer; {platform ID}
     FVerMaj, FVerMin, FVerBuild: Integer;
     FVerSup : String;
@@ -42,16 +40,22 @@ type
     fKernelRelease: string;
     fKernelVersion: string;
     fNetworkNode: string;
+    Init: Boolean;
    {$IFDEF WINDOWS}
+      fProdStrs: TStrings;
+      fWin10Strs: TStrings;
+      fWin11Strs: Tstrings;
+      procedure SetProdStrs(const value: TStrings);
+      procedure SetWin10Strs(const value: TStrings);
+      procedure SetWin11Strs(const value: TStrings);
+      procedure ListChanged(Sender: Tobject);
       function IsWin64: Boolean;
       procedure GetNT32Info;
     {$ENDIF}
   protected
 
   public
-    ProdStr: array of String;
-    Win10Build: array of array of String;
-    Win11Build: array of array of String;
+
     constructor Create(aOwner: Tcomponent); override;
     destructor Destroy; override;
     procedure GetSysInfo;
@@ -64,6 +68,9 @@ type
     property VerMask : Integer read FVerMask;   // Product suite mask;
     property VerTyp: integer read FVerTyp;      // Windows type
     property VerProd : String read FVerProd;    // Version type
+    property ProdStrs: TStrings read fProdStrs write SetProdStrs;
+    property Win10Strs:  TStrings read fWin10Strs write SetWin10Strs;
+    property Win11Strs:  TStrings read fWin11Strs write SetWin11Strs;
     {$ELSE}
     property KernelName: string read FKernelName;
     property KernelRelease: string read FKernelRelease;
@@ -73,7 +80,6 @@ type
     property OSName: string read FOSName;
     property Architecture: string read fArchitecture;
     property VerDetail: string read FVerDetail; //Description of the OS, with version, build etc.
-
 
  end;
 
@@ -245,10 +251,10 @@ type
                                          'Windows 10 Pro for Workstations',                       //A2
                                          'Unknown');                                              //A3
 
-    ProductStr: array of String =   ('',
-                                         'Home',
-                                         'Professional',
-                                         'Server');
+    ProductStrs= ''+LineEnding+
+                 'Home'+LineEnding+
+                 'Professional'+LineEnding+
+                 'Server';
 
     StatStr: array of String = ('Microsoft Windows 32',
                                 'Microsoft Windows 95',
@@ -277,26 +283,25 @@ type
                                 'Système inconnu');
         // First element: build number, second element: english
 
-    Windows10Build: array of array [0..1] of String =(('00000',    'Unknown version'),
-                                              ('10240', 'v 1507 "July 2015 update"'),
-                                              ('10586', 'v 1511 "November 2015 update"'),
-                                              ('14393', 'v 1607 "July 2016 (Anniversary update)"'),
-                                              ('15063', 'v 1703 "April 2017 (Creators update)"'),
-                                              ('16299', 'v 1709 "October 2017 (Fall Creators update)"'),
-                                              ('17134', 'v 1803 "April 2018 update"'),
-                                              ('17763', 'v 1809 "October 2018 update"'),
-                                              ('18362', 'v 1903 "May 2019 update"'),
-                                              ('18363', 'v 1909 "November 2019 update"'),
-                                              ('19041', 'v 2004 "May 2020 update"'),
-                                              ('19042', 'v 20H2 "October 2020 update"'),
-                                              ('19043', 'v 21H1 "May 2021 update"'),
-                                              ('19044', 'v 21H2 "November 2021 update"'),
-                                              ('19045', 'v 22H2 "October 2022 update"'));
+    Windows10Strs = '00000=Unknown version'+LineEnding+
+                    '10240=v 1507 "July 2015 update"'+LineEnding+
+                    '10586=v 1511 "November 2015 update"'+LineEnding+
+                    '14393=v 1607 "July 2016 (Anniversary update)"'+LineEnding+
+                    '15063=v 1703 "April 2017 (Creators update)"'+LineEnding+
+                    '16299=v 1709 "October 2017 (Fall Creators update)"'+LineEnding+
+                    '17134=v 1803 "April 2018 update"'+LineEnding+
+                    '17763=v 1809 "October 2018 update"'+LineEnding+
+                    '18362=v 1903 "May 2019 update"'+LineEnding+
+                    '18363=v 1909 "November 2019 update"'+LineEnding+
+                    '19041=v 2004 "May 2020 update"'+LineEnding+
+                    '19042=v 20H2 "October 2020 update"'+LineEnding+
+                    '19043=v 21H1 "May 2021 update"'+LineEnding+
+                    '19044=v 21H2 "November 2021 update"'+LineEnding+
+                    '19045=v 22H2 "October 2022 update"';
 
-    Windows11Build: array of array [0..1] of String = (('00000',    'Unknown version'),
-                                              ('22000', 'v 21H2 "October 2021 Initial version"'),
-                                              ('22621', 'v 22H2 "September 2022 update"'));
-
+    Windows11Strs = '00000=Unknown version'+LineEnding+
+                    '22000=v 21H2 "October 2021 Initial version"'+LineEnding+
+                    '22621=v 22H2 "September 2022 update"';
 
 
 var
@@ -315,12 +320,9 @@ begin
 end;
 
 constructor TbbOsVersion.Create(aOwner: Tcomponent);
-var
-  i: Integer;
 begin
   inherited Create(aOwner);
   // Initialize variables
-  //fProdStr:= TStringList.Create;
   FVerMaj:=0;
   FVerMin:=0;
   FVerBuild:=0;
@@ -335,34 +337,59 @@ begin
   FKernelVersion:='';
   FNetworkNode:='';
   FVerDetail:='';
+
   {$IFDEF WINDOWS}
-     // populate dynamic arrays for product details and versions with default values
-     SetLength(ProdStr, Length(ProductStr));
-     for i:= 0 to high(ProdStr) do ProdStr[i]:= ProductStr[i];
-     SetLength(Win10Build, length(Windows10Build), length(Windows10Build[0]));
-     SetLength(Win11Build, length(Windows11Build), length(Windows11Build[0]));
-     // Windows 10
-     for i:= 0 to high(Win10Build) do Win10Build[i,0]:= Windows10Build[i,0];
-     for i:= 0 to high(Win10Build) do Win10Build[i,1]:= Windows10Build[i,1];
+     // Create and populate product type list property to allow further translation
+     fProdStrs:= TstringList.Create;
+     TStringList(fProdStrs).OnChange:= @ListChanged;
+     fProdStrs.Text:= ProductStrs;
+     // Create and populate Windows 10 version list property
+     fWin10Strs:= TstringList.Create;
+     TStringList(fWin10Strs).OnChange:= @ListChanged;
+     fWin10Strs.Text:= Windows10Strs;
      // Windows 11
-     for i:= 0 to high(Win11Build) do Win11Build[i,0]:= Windows11Build[i,0];
-     for i:= 0 to high(Win11Build) do Win11Build[i,1]:= Windows11Build[i,1];
+     fWin11Strs:= TstringList.Create;
+     TStringList(fWin11Strs).OnChange:= @ListChanged;
+     fWin11Strs.Text:= Windows11Strs;
   {$ENDIF}
+  init:= true;
   GetSysInfo;
 end;
 
-destructor TbbOSVersion.Destroy;
+destructor TbbOsVersion.Destroy;
 begin
-  {$IFDEF WINDOWS}
-   try
-     //if hProductInfo<>0 then  FreeLibrary(hProductInfo);
-   except
-   end;
- {$ENDIF}
+  if assigned(fProdStrs) then fProdStrs.free;
+  if assigned(fWin10Strs) then fWin10Strs.free;
+  if assigned(fWin11Strs) then fWin11Strs.free;
   inherited;
 end;
 
 {$IFDEF WINDOWS}
+
+procedure TbbOsVersion.SetProdStrs(const value: TStrings);
+begin
+  if fProdStrs<>value then
+  begin
+    fProdStrs.Assign(value);
+  end;
+end;
+
+procedure TbbOsVersion.SetWin10Strs(const value: TStrings);
+begin
+  if fWin10Strs<>value then fWin10Strs.Assign(value);
+end;
+
+procedure TbbOsVersion.SetWin11Strs(const value: TStrings);
+begin
+  if fWin11Strs<>value then fWin11Strs.Assign(value);
+end;
+
+procedure TbbOsVersion.ListChanged(Sender: Tobject);
+begin
+  // Be sure all is intialized
+  if init then GetSysInfo;
+end;
+
 function TbbOsVersion.IsWin64: Boolean;
   {$IFDEF WIN32}
   type
@@ -438,12 +465,10 @@ begin
   if (fVerTyp < High(StatStr)) then FOSName:= StatStr[fVerTyp];
   try
     if fVerProEx > 0 then fVerProd:=  ProdStrEx[fVerProEx] else
-    fVerProd:= ProdStr[fVerPro];
+    fVerProd:= ProdStrs.Strings[fVerPro];//ProdStr[fVerPro];
   except
-    fVerProd:= ProdStr[0];
+    fVerProd:= ProdStrs.Strings[0];//ProdStr[0];
   end;
-  //s:= GetEnvironmentVariable('PROCESSOR_ARCHITECTURE');
-  //if s='AMD64' then s:= 'x86_64';
   if IsWin64 then
   fArchitecture:= 'x86_64' else
   fArchitecture:= 'x86';
@@ -455,6 +480,7 @@ procedure TbbOSVersion.GetNT32Info ;
 var
   dwOSMajorVersion, dwOSMinorVersion,
   dwSpMajorVersion, dwSpMinorVersion: DWORD;
+  A: TStringArray;
   i: integer;
 begin
   dwOSMajorVersion:= 0;
@@ -527,25 +553,31 @@ begin
                   begin
                     fVerTyp:= 19;      // Windows 10 build number start with 10000
                     // Match builds to Win 10 version commercial name, Build numbers are in Win10build array
-                    FVersup:= Win10Build[0, 1]; //'Unknown version';
-                    for i:= 0 to high(Win10build) do
-                      if FVerBuild=StringToInt(Win10build[i,0]) then
-                      try
-                        FVersup:= Win10Build[i, 1];
+                    A:= Win10Strs.Strings[0].Split('='); //'Unknown version'
+                    FVersup:= A[1];
+                    for i:= 0 to Win10Strs.Count-1 do
+                    begin
+                      A:= Win10Strs.Strings[i].Split('=');
+                      if FVerBuild=StrToInt(A[0]) then
+                      begin
+                        FVersup:= A[1];
                         break;
-                      except
                       end;
+                    end;
                   end else
                   begin
                     fVerTyp:= 22  ;  // Windows 11 build number start with 22000
-                    FVersup:= Win11Build[0, 1]; //'Unknown version';
-                    for i:= 0 to high(Win11build) do
-                      if FVerBuild=StringToInt(Win11build[i,0]) then
-                      try
-                        FVersup:= Win11Build[i, 1];
+                    A:= Win11Strs.Strings[0].Split('='); //'Unknown version'
+                    FVersup:= A[1];
+                   for i:= 0 to Win11Strs.Count-1 do
+                    begin
+                      A:= Win11Strs.Strings[i].Split('=');
+                      if FVerBuild=StrToInt(A[0]) then
+                      begin
+                        FVersup:= A[1];
                         break;
-                      except
                       end;
+                    end;
                   end;
                 end else
                 begin

@@ -1,0 +1,59 @@
+# LazbbAstroComponents packet<br>
+
+[Vers page du paquet en Français](https://github.com/bb84000/Lazbbcomponents/wiki//Astro_fr)<br>
+
+**TSuntime** : Provides sunrise, sunset and noon times for a selected date<br>
+**TMoonphases** : Provides moon phases array for a selected year
+**TSeasons** : Provides seasons dates for acces selected year
+**TEaster** : Provides Easter, Ascension and Pentecost dates for a selected year
+
+### TSuntime properties
+
+   **Sundate** (TDateTime) : Selected day<br>
+   **TimeZone** (Double) : Time offset in hours<br>
+   **DST** (Double) : Daylight saving time (0: no, 1: yes)<br>
+    **Latitude** (Double) : Latitude in decimal degrees (N : positive, S : negative)<br>
+   **Longitude** (Double) : Longitude in decimal degrees (E : positive, W : negative)<br>
+   **Altitude** (Integer) : Not yet implemented<br>
+   **TypeSun** (TSunrise) : Sunrise/sunset type: standard, civil, nautic or astro<br>
+   **Sunrise** (TDateTime) : Sunrise at the selected date (Sundate)<br>
+   **Sunset** (TDateTime) : Sunset<br>
+   **SunNoon** (TDateTime) : Noon
+
+### TMoonphases properties
+
+   **Moonyear** (Integer) : Selected year for moon phases<br>
+   **Moondate** (TDateTime) : Selected date for the function isMoon<br>
+   **Moondays** (TMoonDays) : Array of 56 or 112 TMoonRecords containing moon phases for the year Moonyear<br>
+   **MoonImages** (TImageList): List of 8 moon images in the order shown on MType value<br>
+   **Crescent** (Boolean) : _True_, the list has 8 phases and has 112 dates and hours ; _False_, the list has 4 phases and has 56 dates and hours<br>
+   **isMoon function** (TMoonRecord) : Returns a Tmoonrecord if there a moon phase on the day Moondate, else retunr an invalid date in the MDays field<br>
+   **TMoonRecord**<br>
+      _MDays_ (TDateTime) : Moonphase date and hour, or InvalidDate (01/01/0001) if not found<br>
+      _MType_ (String) : New Moon, Waxing crescent, First quarter, Waxing gibbous,
+                      Full moon, Waning gibbous, third/last quarter, Waning crescent<br>
+      _MIndex_ (Integer) : 0 (NM) to 7 (WC) Useful to acces MoonImages and/or customize application<br>
+	  
+  
+### TSeasons properties
+
+   **Seasyear** (Integer) : Selected date for seasons<br>
+   **TimeZone** (Double) : Time offset in hours<br>
+   **SpringDate** (TDateTime) : Spring date<br>
+   **SummerDate** (TdateTime) : Summer date<br>
+   **AutumnDate** (TdateTime) : Autumn date<br>
+   **WinterDate** (TDateTime) : Winter date
+   
+### TEaster properties
+
+   **EasterYear** (Integer) : Selected date for Easter<br>
+   **InvalidYear** (Boolean) : Return value for invalid year<br>
+   **Easterdate** (TDateTime) : Easter date<br>
+   **EasterMondaydate** (TDateTime): Easter monday date<br>
+   **Ascensdate** (TDateTime) : Ascension datge<br>
+   **Pentecdate** (TDateTime) : Pentecost date<br>
+   **PentecMondaydate** (TDateTime) : Pentecost monday date
+                 
+Free use.
+
+bb - sdtp - may 2021   
