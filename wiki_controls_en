@@ -1,4 +1,4 @@
-# Paquet LazbbComponents<br>
+# LazbbComponents package<br>
 
 [Vers page du paquet en Français](https://github.com/bb84000/Lazbbcomponents/wiki/Controls_fr)<br>
 
@@ -77,35 +77,32 @@ Extra components with properties unavailable in Lazarus/FPC native components
   
 ### TbbOsVersion properties, variables and procedure 
   
-  ### _Properties (read-only)_
+  ### _Properties_
 
-  **OSName** : Operating system name.<br>
-  **Architecture** : Processor architecture.<br>
-  **VerDetail** : OS description, with version, build etc.<br>
+  **OSName** : Operating system name (read-only).<br>
+  **Architecture** : Processor architecture (read-only).<br>
+  **VerDetail** : OS description, with version, build etc. (read-only).<br>
   _Windows only properties_<br>
-  **VerMaj** :  Major version number<br>
-  **VerMin** : Minor version number<br>
-  **VerBuild** : Build number<br>
-  **VerSup** : Additional version information<br>
-  **VerMask** : Product suite mask<br>
-  **VerTyp** : Windows type<br>
-  **VerProd** : Version type<br>
+  **ProdStrs** : Product type list, editable to update and/or translate<br>
+  **Win10Strs** : Windows 10 versions descriptions list, editable to update and/or translate<br>
+  **Win11Strs** : Windows 11 versions descriptions list, editable to update and/or translate<br>
+  **VerMaj** :  Major version number (read-only)<br>
+  **VerMin** : Minor version number (read-only)<br>
+  **VerBuild** : Build number (read-only)<br>
+  **VerSup** : Additional version information (read-only)<br>
+  **VerMask** : Product suite mask (read-only)<br>
+  **VerTyp** : Windows type (read-only)<br>
+  **VerProd** : Version type (read-only)<br>
   _Linux, Unix or MacOs only properties_<br>
-  **KernelName** : OS kernel name<br>;
-  **KernelRelease** : OS kernel release<br>
-  **KernelVersion** : OS kernel version<br>
-  **NetworkNode** : Network node name<br>
+  **KernelName** : OS kernel name (read-only)<br>
+  **KernelRelease** : OS kernel release (read-only)<br>
+  **KernelVersion** : OS kernel version (read-only)<br>
+  **NetworkNode** : Network node name (read-only)<br>
    
-  ### _Variables_
-  
-  **ProdStr** : array of String: array containing definition of OS (Windows only)<br>
-  **Win10Build** : array of array of String: Windows 10 build numbers and versions descriptions<br>
-  **Win11Build** : array of array of String: Windows 11 build numbers and versions descriptions<br>
- 
   ### _Procedure_
   
   **GetSysInfo** : Reset OS info detection
 
 Free to use
 
-bb- sdtp - September 2022
+bb- sdtp - October 2022 

@@ -1,6 +1,6 @@
 # Paquet LazbbComponents<br>
 
-[Goto packet English page](https://github.com/bb84000/Lazbbcomponents/wiki/Controls_en)<br>
+[Goto package English page](https://github.com/bb84000/Lazbbcomponents/wiki/Controls_en)<br>
 
 Composants supplémentaires ayant des propriétés non disponibles dsans ceux de Lazarus/FPC  
 
@@ -84,30 +84,27 @@ Composants supplémentaires ayant des propriétés non disponibles dsans ceux de
   
 ### Propriétés, variables et procédure de TbbOsVersion 
   
-  ### _Propriétés (lecture seule)_
+  ### _Propriétés_
 
-  **OSName** : Nom du système d'exploitation.<br>
-  **Architecture** : Architecture du processeur.<br>
-  **VerDetail** : Description de l'OS, avec version, build etc.<br>
+  **OSName** : Nom du système d'exploitation (lecture seule).<br>
+  **Architecture** : Architecture du processeur (lecture seule).<br>
+  **VerDetail** : Description de l'OS, avec version, build etc. (lecture seule).<br>
   _Propriétés Windows_<br>
-  **VerMaj** :  Numéro de version majeur<br>
-  **VerMin** : Numéro de version mineur<br>
-  **VerBuild** : Numéro de build<br>
-  **VerSup** : Informations de version supplémentaires<br>
-  **VerMask** : Masque suite de produit<br>
-  **VerTyp** : Type Windows<br>
-  **VerProd** : Type de version<br>
+  **ProdStrs** : Liste des types de produit, éditable pour mise à jour et/ou traduction<br>
+  **Win10Strs** : Liste des description des versions de Windows 10, éditable pour mise à jour et/ou traduction<br>
+  **Win11Strs** : Liste des description des versions de Windows 11, éditable pour mise à jour et/ou traduction<br>
+  **VerMaj** :  Numéro de version majeur (lecture seule)<br>
+  **VerMin** : Numéro de version mineur (lecture seule)<br>
+  **VerBuild** : Numéro de build (lecture seule)<br>
+  **VerSup** : Informations de version supplémentaires (lecture seule)<br>
+  **VerMask** : Masque suite de produit (lecture seule)<br>
+  **VerTyp** : Type Windows (lecture seule)<br>
+  **VerProd** : Type de version (lecture seule)<br>
   _Propriétés Linux, Unix ou MacOs_<br>
-  **KernelName** : Nom du noyau de l'OS<br>;
-  **KernelRelease** : Version du noyau de l'OS<br>
-  **KernelVersion** : Sous-version du noyau de l'OS<br>
-  **NetworkNode** : Nom du noeud de réseau<br>
-   
-  ### _Variables_
-  
-  **ProdStr** : array of String: Tableau contenant les définitions de l'OS (Windows)<br>
-  **Win10Build** : array of array of String: Numéros de build et description des versions de Windows 10<br>
-  **Win11Build** : array of array of String: Numéros de build et description des versions de Windows 11<br>
+  **KernelName** : Nom du noyau de l'OS (lecture seule)<br>
+  **KernelRelease** : Version du noyau de l'OS (lecture seule)<br>
+  **KernelVersion** : Sous-version du noyau de l'OS (lecture seule)<br>
+  **NetworkNode** : Nom du noeud de réseau (lecture seule)<br>
  
   ### _Procedure_
   
@@ -115,4 +112,4 @@ Composants supplémentaires ayant des propriétés non disponibles dsans ceux de
 
 Utilisation libre
 
-bb- sdtp - Septembre 2022
+bb- sdtp - Octobre 2022

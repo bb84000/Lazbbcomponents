@@ -23,7 +23,7 @@ type
   protected
 
   public
-    constructor Create(AOwner: TComponent);
+    constructor Create(AOwner: TComponent); override;
     property SpringDate: TDateTime read fSpringdate;
     property SummerDate: TdateTime read fSummerDate;
     property AutumnDate: TdateTime read fAutumnDate;

@@ -14,12 +14,9 @@
       </element><element name="TbbOsVersion.KernelName"><short>OS kernel name</short>
       </element><element name="TbbOsVersion.KernelVersion"><short>OS kernel version</short>
       </element><element name="TbbOsVersion.NetworkNode"><short>Network node name</short>
-      </element>
-    <element name="TbbOsVersion.ProdStr"><short>array containing definition of OS (Windows only)</short>
-      </element>
-    <element name="TbbOsVersion.Win10Build"><short>Windows 10 build numbers and versions descriptions</short>
-      </element>
-    <element name="TbbOsVersion.Win11Build"><short>Windows 11 build numbers and versions descriptions</short>
+      </element><element name="TbbOsVersion.ProdStrs"><short>List containing definition of OS (Windows only)</short>
+      </element><element name="TbbOsVersion.Win10Strs"><short>List of Windows 10 build numbers and versions descriptions</short>
+      </element><element name="TbbOsVersion.Win11Strs"><short>List of Windows 11 build numbers and versions descriptions</short>
       </element>
     <element name="TbbOsVersion"><short>Retrieve OS version and information.</short>
       </element>

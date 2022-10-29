@@ -1,0 +1,76 @@
+# LazbbComponents packet<br>
+
+[Vers page du paquet en Français](https://github.com/bb84000/Lazbbcomponents/wiki/Controls_fr)<br>
+
+Extra components with properties unavailable in Lazarus/FPC native components
+
+**TCheckBoxX** : Multifunction check box: colored square, cross, check mark, image.<br>
+**TColorPicker** : Colors choice similar to Components inspector (Colors combo box plus colors dialog button)<br>
+**TSCrollButton** : Text scrolling button (TSpeedbutton descendant)<br>
+**TSCrollLabel** : Text scrolling label (TLabel descendant)<br>
+**TSignalMeter** : A more responsive progress bar, allow real time audio signal strength<br>
+**TLFPTimer** : FPTimer component<br> 
+**TitlePanel** : Panel with a title like a GroupBox. Can change border color and title alignment<br>
+**TbbTrackBar** : A customizable trackbar. Slider, ruler and scale colors can be changed
+
+### TCheckBoxX properties
+
+  **CheckBoxType** : colour, square, cross, check, image.<br>
+  **CheckboxColor** (Tcolor) : check square color
+  
+### TcolorPicker properties
+
+  Base colors, and their identifiers cannot be changed.<br>
+  Selected text cannot be edited. To change the selected color, use the colors dialog
+  or paste a color with the popup menu. An invalid color is ignored.<br>
+  Selected colours not in base colours are added at the end of the list.<br>
+  Like base combo box, component height is related to the items height.<br>
+  The colors dialog is localized by the operating system.
+
+  **Color** (TColor): Initial color<br>
+  **MnuCopyCaption**, **MnuPasteCaption** (String): allow popup localization
+
+### TSCrollButton and TScrollLabel properties
+
+  **Scrolling** (True or false): Enable or disable caption scrolling. When caption is
+            shorter than button width, scrolling is always disabled. Default: 
+			scrolling  is not enabled.<br>
+  **ScrollInterval** (ms): Set the scroolling speed. A low interval means a high
+            scrolling speed. A too low value doesn(t allow a smooth scrolling as 
+			the processor cannot do its job in the interval. Default : 50 ms.<br>
+  **ScrollAutoString** (string): String added at teh end of the text during scrolling.
+            Default is '...'<br> 
+  **ScrollGraph** (True or false): Enable graphic (smooth) scrolling (pixel by pixel 
+            instead text scrolling (character by character). Default: graphic.<br>
+  **ScrollStep** (number): Scrolling step (character or pixel according scrolling 
+            mode). Default 1<br>
+  **ScrollDirection** : Scrolling direction, left to right or right to left.
+            Default : left to right.
+
+
+ 
+### TitlePanel properties
+
+  **Alignment** : Title position on the box : Left, right or center<br>
+  **BorderColor** (Tcolor) : Color of the box border
+  
+### TbbTrackBar properties
+
+  **SliderColor** Slider default color <br>
+  **SliderColorDown** Slider color on mouse button down<br>
+  **SliderColorHover** Slider color on mouse cursor over<br>
+  **SliderBorderColor** Slider border color<br>
+  **SliderStyle** Slider style : ssClassic: same as TTrackBar; ssButton: button like slider<br>
+  **Slidersize** Slider's thickness. Slider width/height is always 21 pixels<br>
+  **RulerColor** Ruler color<br>
+  **RulerBorderColor** Ruler border color<br>
+  **RulerSize** Ruler thickness<br>
+  **ScaleMarks** Same as TTrackbar TickMark<br>
+  **ScaleSize** Min, max and zero scale ticks size. Other ticks are half size<br>
+  **ScaleColor** Scale iicks Color<br>
+  **Frequency** Divider for the scale ticks, also used as position step move when pgUp nd PgDn keys pressed<br>
+  **KeyIncrement** Position step move when arrow key pressed. Home key pressed set position to Min, End key pressed set position to Max
+
+Free use.
+
+bb - sdtp - march 2022

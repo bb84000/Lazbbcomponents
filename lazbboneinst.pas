@@ -16,7 +16,7 @@ unit lazbbOneInst;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, simpleipc, ExtCtrls, LazUTF8, StrUtils;
+  Classes, SysUtils, LResources, Forms, simpleipc, ExtCtrls, LazUTF8;
 
 type
   TOnOtherInstance = procedure (Sender : TObject; Parameter: String) of object;

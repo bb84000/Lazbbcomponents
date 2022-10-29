@@ -19,7 +19,7 @@ uses
   {$ELSE}
     process,
   {$ENDIF}
-  Classes, SysUtils, LResources, lazbbosversionbase, Dialogs;
+  Classes, SysUtils, LResources, lazbbosversionbase;
 
 type
   TbbOsVersion = class(TComponent)
@@ -55,10 +55,10 @@ type
   protected
 
   public
-
     constructor Create(aOwner: Tcomponent); override;
     destructor Destroy; override;
     procedure GetSysInfo;
+
   published
     {$IFDEF WINDOWS}
     property VerMaj: integer read FVerMaj;      // major version number
@@ -251,11 +251,6 @@ type
                                          'Windows 10 Pro for Workstations',                       //A2
                                          'Unknown');                                              //A3
 
-    ProductStrs= ''+LineEnding+
-                 'Home'+LineEnding+
-                 'Professional'+LineEnding+
-                 'Server';
-
     StatStr: array of String = ('Microsoft Windows 32',
                                 'Microsoft Windows 95',
                                 'Microsoft Windows 95-OSR2',
@@ -281,7 +276,12 @@ type
                                 'Microsoft Windows 11',
                                 'Windows Server 2022',
                                 'Système inconnu');
-        // First element: build number, second element: english
+    ProductStrs= ''+LineEnding+
+                 'Home'+LineEnding+
+                 'Professional'+LineEnding+
+                 'Server';
+
+    // First element: build number, second element: english
 
     Windows10Strs = '00000=Unknown version'+LineEnding+
                     '10240=v 1507 "July 2015 update"'+LineEnding+
@@ -337,7 +337,6 @@ begin
   FKernelVersion:='';
   FNetworkNode:='';
   FVerDetail:='';
-
   {$IFDEF WINDOWS}
      // Create and populate product type list property to allow further translation
      fProdStrs:= TstringList.Create;
@@ -569,7 +568,7 @@ begin
                     fVerTyp:= 22  ;  // Windows 11 build number start with 22000
                     A:= Win11Strs.Strings[0].Split('='); //'Unknown version'
                     FVersup:= A[1];
-                   for i:= 0 to Win11Strs.Count-1 do
+                    for i:= 0 to Win11Strs.Count-1 do
                     begin
                       A:= Win11Strs.Strings[i].Split('=');
                       if FVerBuild=StrToInt(A[0]) then

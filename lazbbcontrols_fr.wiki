@@ -1,0 +1,76 @@
+# Paquet LazbbComponents<br>
+
+[Goto packet English page](https://github.com/bb84000/Lazbbcomponents/wiki/Controls_en)<br>
+
+Composants supplémentaires ayant des propriétés non disponibles dsans ceux de Lazarus/FPC  
+
+**TCheckBoxX** :  Case à cocher multifonctions : carré coloré, croix, coche, image.<br> 
+**TColorPicker** : Choix de couleurs similaire à celui de l'inspecteur de composants(combo box de couleurs plus bouton d'appel du dialogue de couleurs)<br>
+**TSCrollButton** : Bouton à défilement de texte (Descendant de TSpeedbutton)<br>
+**TSCrollLabel** : Label à défilement de texte (Descendant de TLabel)<br>
+**TSignalMeter** : Une barre de progression plus rapide, permet la visualisation en temps réel du niveau d'un signal audio<br>
+**TLFPTimer** : Composant FPTimer<br>
+**TitlePanel** : Panel avec un titre comme une GroupBox. Couleur de bordure et alignement du titre modifiables<br>
+**TbbTrackBar** : Un trackbar personnalisable. Couleurs de bouton, règle, échelle modifiables
+
+### Propriétés de TCheckBoxX
+
+  **CheckBoxType** : carré, croix, coche, image.<br>
+  **CheckboxColor** (Tcolor) : couleur du carré
+ 
+### Propriétés de TcolorPicker
+
+  Les couleurs de base, ainsi que leurs identifiants ne peuvent pas être changés.<br>
+    Le texte sélectionné n'est pas éditable. Pour changer la coueur  sélectionnée, utiliser
+  le dialogue de couleurs ou coller une couleur avec le menu popup. Une couleur invalide
+  n'est pas prise en compte.<br>
+  Les couleurs qui ne sont pas de base s'ajoutent à la fin de la liste.<br>  
+  Comme avec la combo box de base, la hauteur du composant dépend de la hauteur des items.<br>
+  Le dialogue de couleurs est localisé par le système d'exploitation.
+
+  **Color** (TColor): Couleur initiale<br>
+  **MnuCopyCaption**, **MnuPasteCaption** (String): permet une localisation du menu popup
+
+### Propriétés de TSCrollButton et and TScrollLabel
+
+  **Scrolling** (True or false): Active ou désactive le défilement du texte. 
+            Si le texte est plus court que la largeur du bouton, le défilement 
+			ne s'active pas. Par défaut "false" le défilement n'est pas activé.<br>
+  **ScrollInterval** (ms): Détermine la vitesse du défilement. Plus la valeur est 
+            faible, plus le défilement est rapide. Une valeur trop faible ne
+			permet pas un défilement fluide, le processeur n'ayant pas le temps
+			d'effectuer le traitement dans le temps imparti. par défaut 50 ms.<br>
+  **ScrollAutoString** (string): Caractères ajoutés entre la fin du texte et le début
+            du texte suivant lors du défilement. Par défaut "...".<br> 
+  **ScrollGraph** (True or false): Active le défilement graphique (pixel par pixel)
+            ou texte(caractère par caractère). Par défaut "graphique".<br>
+  **ScrollStep** (number): Pas du défilement (caractère ou pixel selon le mode choisi)
+            Par défaut 1.<br>
+  **ScrollDirection** : sens de défilement, gauche à droite ou droite à gauche. Par 
+            défaut, défilement de gauche à droite. 
+
+### Propriétés de TitlePanel
+
+  **Alignment** : Position du titre sur la boîte : gauche, droite ou centre<br>
+  **BorderColor** (Tcolor) : Couleur de la bordure
+  
+### Propriétés de TbbTrackBar
+
+  **SliderColor** Couleur par défaut du Slider<br>
+  **SliderColorDown** Couleur du Slider quand le bouton de la souris est appuyé<br>
+  **SliderColorHover** Couleur du Slider quand le curseur de la souris le survole<br>
+  **SliderBorderColor** Couleur de la bordure du Slider<br>
+  **SliderStyle** Style du Slider : ssClassic: Identique à celui de TTrackBar; ssButton: slider de type "bouton"<br>
+  **Slidersize** Epaisseur du Slider. la largeur/hauteur du Slider est toujours de 21 pixels<br>
+  **RulerColor** Couleur du Ruler<br>
+  **RulerBorderColor** Couleur de la bordure du Ruler<br>
+  **RulerSize** Epaisseur du Ruler<br>
+  **ScaleMarks** Identique au TickMark du TTrackbar<br>
+  **ScaleSize** Taille des divisions Min, Max et 0 de l'échelle. Les autres divisions font la moitié de cette taille<br>
+  **ScaleColor** Couleur des divisions de l'échelle<br>
+  **Frequency** Diviseur de l'échelle, également utilisé pour l'action des touches PgUp et PgDn<br>
+  **KeyIncrement** Incrément de la position lors de l'action des touches "flèches". La touche Home potionne à Min, la touche End à Max 
+  
+Utilisation libre
+
+bb- sdtp - Mars 2022
