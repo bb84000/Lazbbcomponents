@@ -34,6 +34,11 @@
       <element name="TbbTrackBar.RulerColor">
         <short>Ruler background color</short>
       </element>
+      <element name="TbbTrackBar.RulerActiveColor">
+        <short>Ruler background color between 0 and the current position</short>
+		<descr>Set to the same color as <b>RulerColor</b> if you don't need this feature
+        </descr>
+      </element>	  
       <element name="TbbTrackBar.ScaleColor">
         <short>Scale ticks color</short>
       </element>

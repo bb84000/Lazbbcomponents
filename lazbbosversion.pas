@@ -357,9 +357,11 @@ end;
 
 destructor TbbOsVersion.Destroy;
 begin
+{$IFDEF WINDOWS}
   if assigned(fProdStrs) then fProdStrs.free;
   if assigned(fWin10Strs) then fWin10Strs.free;
   if assigned(fWin11Strs) then fWin11Strs.free;
+{$ENDIF}
   inherited;
 end;
 
@@ -598,7 +600,7 @@ end;
 
 
 {$ELSE}
-  procedure TOSVersion.GetSysInfo;
+  procedure TbbOSVersion.GetSysInfo;
   var
     P: TProcess;
     Function ExecParam(Param: String): String;

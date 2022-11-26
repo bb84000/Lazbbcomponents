@@ -10,6 +10,7 @@
     Slidersize : Slider's thickness-1 px
     SliderStyle : ssClassic: TTrackbar style; ssButton: Button like silider
     RulerColor: Ruler color
+    RulerActiveColor: Ruler color between 0 and the current position
     RulerBorderColor: Ruler border color
     RulerSize: Ruler thickness
     ScaleMarks: Same as TTrackbar TickMark;
@@ -29,7 +30,11 @@ unit lazbbtrackbar;
 interface
 
 uses
-  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLType, LMessages, FPCanvas;
+  Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, LCLType, LCLIntf,  LMessages, FPCanvas;
+
+// Message post at the end of activation procedure, processed once the form is shown
+const
+  WM_UPDATE = WM_USER + 1;
 
 type
 
@@ -96,6 +101,7 @@ type
     FSliderStyle: TSliderStyle;
     FSliderBorderColor: TColor;
     FRulerColor: TColor;
+    FRulerActiveColor: TColor;
     FRulerBorderColor: Tcolor;
     FRulerSize: integer;
     FPosition: Integer;
@@ -129,6 +135,7 @@ type
     procedure setSliderStyle(ss: TSliderStyle);
     procedure setSliderBorderColor(cl: Tcolor);
     procedure setRulerColor(cl: Tcolor);
+    procedure SetRulerActiveColor(cl: Tcolor);
     procedure setRulerBorderColor(cl: Tcolor);
     procedure setRulerSize(i: integer);
     procedure setScaleColor(cl: Tcolor);
@@ -150,6 +157,7 @@ type
     function PixelsToPosition(px: Integer): Integer;
     procedure WMSetFocus(var Message: TLMSetFocus); message LM_SETFOCUS;
     procedure WMKillFocus(var Message: TLMKILLFOCUS); message LM_KILLFOCUS;
+    procedure MessageProc(var Msg: TLMessage); message WM_UPDATE;
   protected
     procedure MouseMove(Shift: TShiftState; X,Y: Integer);override;
     procedure MouseUp(Button: TMouseButton; Shift:TShiftState; X,Y:Integer); override;
@@ -182,6 +190,7 @@ type
     property SliderSize: INteger read FSliderSize write setSliderSize;
     property SliderStyle: TSliderStyle read FSliderStyle write setSliderStyle;
     property RulerColor: TColor read FRulerColor write setRulerColor;
+    property RulerActiveColor: TColor read FRulerActiveColor write setRulerActiveColor;
     property RulerBorderColor: Tcolor read FRulerBorderColor write setRulerBorderColor;
     property RulerSize: Integer read FRulerSize write setRulerSize;
     property ScaleMarks: TSCaleMark read FScaleMarks write setScaleMarks;
@@ -471,6 +480,15 @@ end;
 
 // TbbTRackbar
 
+// Procedure to intercept messages
+// Force style change when component is loaded
+
+procedure TbbTrackBar.MessageProc(var Msg: TLMessage);
+begin
+
+  SliderStyle:= FSliderStyle;
+end;
+
 constructor TbbTrackBar.create(aOwner: Tcomponent);
 begin
   inherited;
@@ -478,6 +496,9 @@ begin
   ControlStyle := ControlStyle + [csParentBackground, csClickEvents,
     csCaptureMouse, csDoubleClicks, csRequiresKeyboardInput, csopaque];
   Slider:= TSlider.Create(self);
+  Slider.parent:= self;
+  fSliderStyle:= ssClassic;
+
   Scale:= TScale.Create(self);
   Width:= 30;
   Height:= 120;
@@ -502,21 +523,19 @@ begin
   FOrientation:= tbVertical;
   FScaleMarks:=  tmTopLeft;
   Scale.ReInit;
-  SliderStyle:= ssClassic;
   Slider.ReInit(true);
   Xprev:= 0;
   Yprev:=0;
-  //FSliderColor:= clMenuHighlight;
-  //FSliderColorDown:= clActiveCaption;
-  //FSliderColorHover:= clBlue;
-  //FSliderBorderColor:= clActiveBorder;
   FRulerColor:= cl3DLight;
+  FRulerActiveColor:= clGradientActiveCaption;
   FRulerBorderColor:= clActiveBorder;
   FScaleColor:= clGray;
   FColorParent:= false;
   Paint;
   Tabstop:= true;
   First:= true;
+  // fired when component is loaded to set proper slider style
+  PostMessage(Handle, WM_UPDATE, 0, 0) ;
 end;
 
 destructor TbbTrackBar.Destroy;
@@ -806,7 +825,7 @@ end;
 
 procedure TbbTrackBar.setSliderStyle(ss: TSliderStyle);
 begin
-  if FSliderStyle= ss then exit;
+  //if FSliderStyle= ss then exit;
   FSliderStyle:= ss;
   if csDesigning in ComponentState then
   begin
@@ -831,6 +850,13 @@ procedure TbbTrackBar.setRulerColor(cl: Tcolor);
 begin
   if FRulerColor= cl then exit;
   FRulerColor:= cl;
+  Invalidate;
+end;
+
+procedure TbbTrackBar.setRulerActiveColor(cl: Tcolor);
+begin
+  if FRulerActiveColor= cl then exit;
+  FRulerActiveColor:= cl;
   Invalidate;
 end;
 
@@ -888,6 +914,8 @@ end;
 
 
 procedure TbbTrackBar.PaintRuler;
+var
+  ActRect: Trect;
 begin
   RulerChange;
   Canvas.pen.style:= psSolid;
@@ -901,6 +929,23 @@ begin
     Canvas.pen.Color:=FRulerBorderColor;
     Canvas.Brush.Color:= FRulerColor;
     Canvas.Rectangle(Ruler);
+    if FOrientation= tbVertical then
+    begin
+      ActRect.Left:= Ruler.Left+1;
+      ActRect.Width:= Ruler.Width-2;
+      ActRect.top:= PositionToPixels(0)+(Slider.Rectngl.Height div 2)+1;
+      ActRect.Bottom:= PositionToPixels(FPosition)+(Slider.Rectngl.Height div 2)  ;
+    end else
+    begin
+      ActRect.Top:= Ruler.Top+1;
+      ActRect.Height:= Ruler.Height-2;
+      ActRect.left:= PositionToPixels(0)+(Slider.Rectngl.width div 2)+1;
+      ActRect.right:= PositionToPixels(FPosition)+(Slider.Rectngl.width div 2);
+    end;
+    Canvas.pen.Color:= FRulerActiveColor;
+    Canvas.Brush.Color:= FRulerActiveColor;
+    Canvas.Rectangle(ActRect);
+
   end;
   Canvas.pen.style:= psClear;
 end;
@@ -992,6 +1037,7 @@ begin
       Slider.Move(dx, Y);
     end;
   end;
+  Invalidate;
   Slider.Paint(bsDown);
   Xprev:= X;
   Yprev:= Y;
@@ -1017,5 +1063,6 @@ begin
 end;
 
 end.
+
 
 

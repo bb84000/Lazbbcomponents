@@ -15,9 +15,10 @@ uses
     process,
   {$ENDIF}  Classes, SysUtils;
 
-type
+
 
   {$IFDEF WINDOWS}
+   type
     // missing structure for GetVersionEx Windows function
     POSVersionInfoExA = ^TOSVersionInfoExA;
     POSVersionInfoExW = ^TOSVersionInfoExW;
