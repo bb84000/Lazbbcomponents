@@ -26,8 +26,7 @@ Extra components with properties unavailable in Lazarus/FPC native components
 **TCheckBoxX** : Multifunction check box: colored square, cross, check mark, image.&lt;br>
 **TColorPicker** : Colors choice similar to Components inspector (Colors combo box plus colors dialog button)&lt;br>
 **TbbSCrollButton** : Text scrolling button (TSpeedbutton descendant)&lt;br>
-**TbbSCrollLabel** :  Deprecated. Use T bbLabelScroll instead for linux compatibility&lt;br>
-**TbbLabelScroll** : Text scrolling label (TLabel descendant)&lt;br>
+**TbbSCrollLabel** : Text scrolling label (TLabel descendant)&lt;br>
 **TSignalMeter** : A more responsive progress bar, allow real time audio signal strength&lt;br>
 **TLFPTimer** : FPTimer component&lt;br> 
 **TitlePanel** : Panel with a title like a GroupBox. Can change border color and title alignment&lt;br>
