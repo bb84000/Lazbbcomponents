@@ -1,7 +1,7 @@
 {******************************************************************************
   lazbbtrackbar : Customizable TTrackbar
   Added to lazbbComponents palette
-  bb - sdtp - march 2022
+  bb - sdtp - november 2022
 
   TbbTrackBar specific properties :
     SliderColor: Slider default color
@@ -34,7 +34,7 @@ uses
 
 // Message post at the end of activation procedure, processed once the form is shown
 const
-  WM_UPDATE = WM_USER + 1;
+  WM_LOADED = WM_USER + 1;
 
 type
 
@@ -53,7 +53,6 @@ type
   private
   protected
   public
-    bmp: Tbitmap;
     Parent: TbbTrackBar;
     TopLeft, BotRight:  array of integer;
     constructor create(aOwner: TbbTrackBar);
@@ -62,6 +61,8 @@ type
     procedure Paint;
   published
   end;
+
+  // TSlider class
 
   TSlider = class
   private
@@ -82,15 +83,7 @@ type
   published
   end;
 
-  TLMSetFocus = record
-    Msg: Cardinal;
-    {$ifdef cpu64}
-      UnusedMsg: Cardinal;
-    {$endif}
-    FocusedWnd: HWND;
-    Unused: LPARAM;
-    Result: LRESULT;
-  end;
+  // TTrackbar component
 
   TbbTrackBar = class(TCustomControl)
   private
@@ -124,8 +117,8 @@ type
     XMouse, YMouse: Integer;
     PrevWidth, PrevHeight: Integer;
     Ruler: Trect;
-    topleftScale,botrightScale: array of integer;
     First: Boolean;
+    IsLoaded: Boolean;
     function getPosition: integer;
     procedure setPosition(i: integer);
     procedure setSliderColor(cl: TColor);
@@ -148,8 +141,6 @@ type
     procedure setOrientation(tr: TTBarOrientation);
     procedure setReversed(b: boolean);
     procedure setColorParent(b: boolean);
-    //function getColor: TColor;
-    //procedure setColor(cl: Tcolor);
     procedure RulerChange;
     procedure PaintRuler;
     procedure PositionChange(p: integer);
@@ -157,7 +148,7 @@ type
     function PixelsToPosition(px: Integer): Integer;
     procedure WMSetFocus(var Message: TLMSetFocus); message LM_SETFOCUS;
     procedure WMKillFocus(var Message: TLMKILLFOCUS); message LM_KILLFOCUS;
-    procedure MessageProc(var Msg: TLMessage); message WM_UPDATE;
+    procedure LoadedProc(var Msg: TLMessage); message WM_LOADED;
   protected
     procedure MouseMove(Shift: TShiftState; X,Y: Integer);override;
     procedure MouseUp(Button: TMouseButton; Shift:TShiftState; X,Y:Integer); override;
@@ -175,7 +166,7 @@ type
   published
     property OnPositionChange: TNotifyEvent read FOnPositionChange write FOnPositionChange;
     property enabled;
-    property color; //: Tcolor read getcolor write setColor;
+    property color;
     property Orientation: TTBarOrientation read FOrientation write setOrientation;
     property Reversed: Boolean read FReversed write setReversed default False;
     property Min: Integer read FMin write setMin;
@@ -424,6 +415,7 @@ var
   BorderCol: TColor;
 begin
   BorderCol:= Parent.SliderBorderColor;
+  Col:= Parent.SliderColor;
   if (not Parent.enabled) or (BtnState=bsDisabled) then
   begin
     col:= $CCCCCC;
@@ -480,13 +472,17 @@ end;
 
 // TbbTRackbar
 
-// Procedure to intercept messages
-// Force style change when component is loaded
+// Procedure to intercept wm_loaded message
+// Equivalent to Loaded procedure which is protected for the ancestor component
+// Use PostMessage(handle, WM_LOADED, 0,0) at the very end of constructor
 
-procedure TbbTrackBar.MessageProc(var Msg: TLMessage);
+procedure TbbTrackBar.LoadedProc(var Msg: TLMessage);
 begin
-
+  // Slider style need to be set here
+  // as its operates only when component is loaded
   SliderStyle:= FSliderStyle;
+  First:= True;
+  IsLoaded:= True;
 end;
 
 constructor TbbTrackBar.create(aOwner: Tcomponent);
@@ -496,9 +492,7 @@ begin
   ControlStyle := ControlStyle + [csParentBackground, csClickEvents,
     csCaptureMouse, csDoubleClicks, csRequiresKeyboardInput, csopaque];
   Slider:= TSlider.Create(self);
-  Slider.parent:= self;
   fSliderStyle:= ssClassic;
-
   Scale:= TScale.Create(self);
   Width:= 30;
   Height:= 120;
@@ -512,7 +506,7 @@ begin
   brMargin:= 10;
   GapMin:= 5;
   GapMax:= 5;
-  FSliderSize:= 10;
+  FSliderSize:= 11;
   FScaleSize:= 5;
   FRulerSize:= 10;
   FFrequency:= 1;
@@ -534,8 +528,8 @@ begin
   Paint;
   Tabstop:= true;
   First:= true;
-  // fired when component is loaded to set proper slider style
-  PostMessage(Handle, WM_UPDATE, 0, 0) ;
+  // fired when component is loaded to mimic loaded protected procedure
+  PostMessage(Handle, WM_LOADED, 0, 0) ;
 end;
 
 destructor TbbTrackBar.Destroy;
@@ -593,7 +587,7 @@ begin
   if csDesigning in ComponentState then
   begin
     Slider.ReInit(true);
-    if FOrientation= tbVertical then PositionChange(0) //SliderMove(Ruler.Top-5,FScaleSize)
+    if FOrientation= tbVertical then PositionChange(0)
     else PositionChange(0);
     invalidate;
   end;
@@ -659,12 +653,14 @@ end;
 procedure TbbTrackBar.setPosition(i: integer);
 begin
   if FPosition= i then exit;
-  if (i<Fmin) or (i>Fmax) then
+  if csDesigning in ComponentState then  // When designing, alert if ps is wrong
   begin
+    if (i<Fmin) or (i>Fmax) then
     raise ELayoutException.CreateFmt('Position must be between Min (%d) and Max (%d).'+LineEnding+
                                      'Position value %d not allowed.', [FMin, FMax, i]);
-    exit;
   end;
+  if i<Fmin then i:= FMin;
+  if i>Fmax then i:= FMax;
   FPosition:= i;
   PositionChange(i);
   Invalidate;
@@ -672,11 +668,10 @@ begin
 end;
 
 procedure TbbTrackBar.setOrientation(tr: TTBarOrientation);
-
 begin
   if Forientation=tr then exit;
   Forientation:= tr;
-  if csDesigning in ComponentState then
+
   begin
     if (Forientation= tbVertical) and (width>height) or
        (FOrientation=tbHorizontal) and (height>width) then
@@ -764,7 +759,6 @@ begin
     exit;
   end;
   FMax:= i;
-
   PositionChange(FPosition);
   Invalidate;
 end;
@@ -825,7 +819,7 @@ end;
 
 procedure TbbTrackBar.setSliderStyle(ss: TSliderStyle);
 begin
-  //if FSliderStyle= ss then exit;
+  if IsLoaded and (FSliderStyle=ss) then exit;
   FSliderStyle:= ss;
   if csDesigning in ComponentState then
   begin
@@ -877,18 +871,6 @@ begin
   if FColorParent then setColor(GetColorResolvingParent);
   invalidate;
 end;
-
-{function TbbTrackBar.getColor: TColor;
-begin
-  result:= inherited Color;
-end;
-
-procedure TbbTrackBar.setColor(cl: Tcolor);
-begin
-  if Color=cl then exit;
-  if Cl=clNone then Color:= clDefault else Color:=cl;
-  invalidate;
-end;  }
 
 procedure TbbTrackBar.setScaleColor(cl: Tcolor);
 begin
@@ -988,6 +970,7 @@ end;
 procedure TbbTrackBar.MouseDown(Button: TMouseButton; Shift:TShiftState; X, Y:Integer);
 begin
   inherited;
+  SetFocus;
   // Check if we are in the Slider rectangle
   MouseDwn:=false;
   if not Slider.Rectngl.Contains(Point(X,Y)) then exit;
@@ -1004,11 +987,11 @@ procedure TbbTrackBar.MouseMove(Shift: TShiftState; X, Y: Integer);
 var
  dy: integer;
  dx: Integer;
- col: Tcolor;
+ //col: Tcolor;
 begin
   inherited;
-  if (Color=clDefault) then Col:= clForm
-  else Col:= color;
+  //if (Color=clDefault) then Col:= clForm
+  //else Col:= color;
   XMouse:= X;
   YMouse:= Y;
   if Slider.Rectngl.Contains(Point(X, Y))then
