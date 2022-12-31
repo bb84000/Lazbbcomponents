@@ -35,7 +35,7 @@ TBidiMod = (Disabled);
 
 // New scrolling label
 
-TbbScrollLabel = class(TCustomLabel)
+TbbScrollLabel = class(TLabel)
 private
   FScrollAutoString: String;
   FScrollDirection: TSCrollDirection;
@@ -63,64 +63,18 @@ private
   procedure OnTimerScrollL(Sender: TObject);         // Left to right
   procedure OnTimerScrollR(Sender: TObject);         // Right to left
 protected
-  procedure Paint; override;
-
 public
   constructor Create(AOwner: TComponent); override;
   destructor Destroy; override;
+  procedure Paint; override;
 published
-  property Align;
-  property Alignment;
-  property Anchors;
-  property AutoSize;
-  Property BiDiMode;
-  property BorderSpacing;
   property Caption: string read GetCaption write SetCaption;
-  property Color;
-  property Constraints;
-  property DragCursor;
-  property DragKind;
-  property DragMode;
-  property Enabled;
-  property FocusControl;
-  property Font;
-  property Layout;
-  property ParentColor;
-  property ParentFont;
-  property ParentShowHint;
-  Property PopupMenu;
   property ScrollAutoString: string read FScrollAutoString write SetScrollAutoString;
   property ScrollDirection: TScrollDirection read FScrollDirection write SetScrollDirection default sdLeftToRight;
   property ScrollGraph: Boolean read FScrollGraph write SetScrollGraph default true;
   property Scrolling: Boolean read FScrolling write SetScrolling default false;
   property ScrollInterval: Integer read FScrollInterval write SetScrollInterval default 50;
   property ScrollStep: Integer read FScrollStep write SetScrollStep default 1;
-  property ShowAccelChar;
-  property ShowHint;
-  property Transparent;
-  property Visible;
-  property WordWrap;
-  property OnChangeBounds;
-  property OnClick;
-  property OnContextPopup;
-  property OnDblClick;
-  property OnDragDrop;
-  property OnDragOver;
-  property OnEndDrag;
-  property OnMouseDown;
-  property OnMouseEnter;
-  property OnMouseLeave;
-  property OnMouseMove;
-  property OnMouseUp;
-  property OnMouseWheel;
-  property OnMouseWheelDown;
-  property OnMouseWheelUp;
-  property OnMouseWheelHorz;
-  property OnMouseWheelLeft;
-  property OnMouseWheelRight;
-  property OnResize;
-  property OnStartDrag;
-  property OptimalFill;
 end;
 
 TbbScrollButton = class(TSpeedButton)
