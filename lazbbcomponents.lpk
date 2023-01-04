@@ -26,7 +26,7 @@ Extra components with properties unavailable in Lazarus/FPC native components
 **TCheckBoxX** : Multifunction check box: colored square, cross, check mark, image.&lt;br>
 **TColorPicker** : Colors choice similar to Components inspector (Colors combo box plus colors dialog button)&lt;br>
 **TbbSCrollButton** : Text scrolling button (TSpeedbutton descendant)&lt;br>
-**TbbSCrollLabel** : Text scrolling label (TLabel descendant)&lt;br>
+**TbbSCrollLabel** : Text scrolling label (TCustomLabel descendant)&lt;br>
 **TSignalMeter** : A more responsive progress bar, allow real time audio signal strength&lt;br>
 **TLFPTimer** : FPTimer component&lt;br> 
 **TitlePanel** : Panel with a title like a GroupBox. Can change border color and title alignment&lt;br>
@@ -35,7 +35,7 @@ Extra components with properties unavailable in Lazarus/FPC native components
 **TbbOsVersion**: Provide OS informations."/>
     <License Value="Open source
 Free to use"/>
-    <Version Major="1" Release="3"/>
+    <Version Major="1" Release="3" Build="1"/>
     <Files Count="6">
       <Item1>
         <Filename Value="lazbbcontrols.pas"/>
