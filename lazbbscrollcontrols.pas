@@ -480,6 +480,7 @@ begin
   if Alignment=al then exit;
   Inherited Alignment:= al;
   Init;
+  CaptionWidth:= -1;
   Invalidate;
 end;
 
@@ -495,6 +496,7 @@ begin
   ScrollText:= Caption+FScrollAutoString;
   ScrollIndex:= 0;
   Init;
+  CaptionWidth:= -1;
   Invalidate;
 end;
 
@@ -508,6 +510,7 @@ begin
   if Layout=tl then exit;
   Inherited Layout:= tl;
   Init;
+  CaptionWidth:= -1;
   Invalidate;
 end;
 
@@ -517,6 +520,7 @@ begin
   FScrollAutoString:=s;
   ScrollText:= Caption+FScrollAutoString;
   Init;
+  CaptionWidth:= -1;
   Invalidate;
 end;
 
@@ -600,6 +604,7 @@ begin
   ScrollText:= Caption+FScrollAutoString;
   TextScroll:= Caption+FScrollAutoString;
   First:= true;
+  CaptionWidth:= -1;
   //Init;
 end;
 
@@ -626,8 +631,24 @@ begin
   CaptionRect.Bottom:= Height-BorderSpacing.Bottom;
   if (color=cldefault) or (color=clnone) then bkcolor:= clForm //Parent.Color
   else bkColor:= color;
-  // Canvas enabled from Paint procedure
-  if OKCanvas then
+  if Assigned(ScrollBmp) then
+  begin
+    ScrollBmp.Height:= Height;
+
+    ScrollBmp.Canvas.Font.Assign(Font);
+    ScrollBmp.Canvas.Brush.Style:= bssolid;
+    ScrollBmp.Canvas.Brush.color:= bkColor;
+    ScrollBmp.Canvas.pen.color:= Font.Color;
+    ScrollBmp.Canvas.FillRect(0,0,ScrollBmp.Width, ScrollBmp.Height);
+  end;
+end;
+
+// Paint the component
+
+procedure TbbScrollLabel.Paint;
+begin
+  // Changes only when some properties changes, when we have set CaptionWidth atr a negative value
+  if CaptionWidth < 0 then
   begin
     CaptionWidth:= Canvas.TextWidth(Caption);
     TxtWidth:= Canvas.TextWidth(ScrollText);
@@ -642,30 +663,7 @@ begin
       taCenter: xOff:= (Width-CaptionWidth) div 2;
       else xOff:= 0;
     end;
-    Canvas.Brush.Style:= bssolid;
-    Canvas.Brush.color:= bkColor;
-    ScrollBmp.Height:= Height;
-    ScrollBmp.Width:= txtWidth*2;
-    ScrollBmp.Canvas.Font.Assign(Font);
-    ScrollBmp.Canvas.Brush.Style:= bssolid;
-    ScrollBmp.Canvas.Brush.color:= bkColor;
-    ScrollBmp.Canvas.pen.color:= Font.Color;
-    ScrollBmp.Canvas.FillRect(0,0,ScrollBmp.Width, ScrollBmp.Height);
-  end;
-end;
-
-// Paint the component
-
-procedure TbbScrollLabel.Paint;
-begin
-  // Canvas related stuff is active once Inherited Paint is done. So, we can move most of related variables
-  // initialization in Init procedure
-  if not OKCanvas then
-  begin
-    Inherited Paint;
-    OKCanvas:= true;
-    Init;
-  end;
+   end;
   if (not FSCrolling) or (CaptionWidth<Clientwidth) or (csDesigning in ComponentState) then
   begin
     inherited Paint;
@@ -673,6 +671,9 @@ begin
   end;
   if FSCrollGraph then
   begin
+    Canvas.Brush.Style:= bssolid;
+    Canvas.Brush.color:= bkColor;
+    ScrollBmp.Width:= txtWidth*2;
     // Write the scrolltext (Caption+ScrollAutostring+Caption+SCrollAutostring) on ScrollBmp
     ScrollBmp.Canvas.TextOut(xOff,yOff, ScrollText+ScrollText);
     // Copy part of ScrollBMP on the component canvas, timer increment part position
