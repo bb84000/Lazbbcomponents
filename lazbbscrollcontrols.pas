@@ -24,7 +24,7 @@ interface
 
 uses
   Classes, SysUtils, LResources, Forms, Controls, Graphics, Dialogs, Buttons,
-  fpTimer, ExtCtrls, StdCtrls;
+  fpTimer, ExtCtrls, StdCtrls, LMessages;
 
 
 type
@@ -96,22 +96,18 @@ private
   FScrolling: Boolean;
   FSCrollInterval: Integer;
   FScrollStep: Integer;
-  //FTransparent: Boolean;
-  //FWordWrap: Boolean;
   CaptionRect: TRect;
   TxtHeight, TxtWidth, CaptionWidth: Integer;
   ScrollBmp: TBitmap;
   ScrollIndex: Integer;
-  ScrollRect: Trect;
   bkColor: TColor;
   ScrollText: String;
   TextScroll: String;
   TimerScroll:TFPTimer;
+  TimerSCrollBmp: TTimer;
   First: Boolean;
-  //IsLoaded: Boolean;
   xOff, yOff: Integer;
-
-  NoScrolling: Boolean;
+  OKCanvas: Boolean;
   function GetAlignment: TAlignment;
   procedure SetAlignment(al: TAlignment);
   function GetCaption: String;
@@ -126,16 +122,17 @@ private
   procedure SetScrollStep(i: Integer);
   procedure OnTimerScrollL(Sender: TObject);
   procedure OnTimerScrollR(Sender: TObject);         // Right to left
+  procedure OnTimerScrollBmp(Sender: TObject);       // Timer to detect when ScrollBmp is available
   procedure Init;
 protected
-
+   procedure CMColorChanged( Var Msg  :TLMessage ); Message CM_COLORCHANGED;
 public
   constructor Create(aOwner: Tcomponent); override;
   destructor Destroy; override;
   procedure Paint; override;
 published
   property Align;
-  property Alignment: TAlignment read GetAlignment write SetAlignment;
+  property Alignment: TAlignment read GetAlignment write SetAlignment default taLeftJustify;
   property Anchors;
   property AutoSize;
   property BidiMode;
@@ -149,7 +146,7 @@ published
   property Enabled;
   property FocusControl;
   property Font;
-  property Layout: TTextLayout read GetLayout write SetLayout;
+  property Layout: TTextLayout read GetLayout write SetLayout default tlTop;
   property ParentBidiMode;
   property ParentColor;
   property ParentFont;
@@ -181,70 +178,16 @@ published
   property OnResize;
   property OnStartDrag;
   property OptimalFill;
+  // Scrolling properties
   property ScrollAutoString: String read FScrollAutoString write SetScrollAutoString;
-  property ScrollDirection: TSCrollDirection read FScrollDirection write SetScrollDirection;
-  property SCrollGraph: Boolean read FSCrollGraph  write SetSCrollGraph;
-  property Scrolling: Boolean read FScrolling write SetScrolling;
+  property ScrollDirection: TSCrollDirection read FScrollDirection write SetScrollDirection default sdLeftToRight;
+  property SCrollGraph: Boolean read FSCrollGraph  write SetSCrollGraph default True;
+  property Scrolling: Boolean read FScrolling write SetScrolling default True;
   property ScrollInterval: Integer read FSCrollInterval write SetSCrollInterval default 50;
-  property ScrollStep: Integer read FScrollStep write SetScrollStep;
+  property ScrollStep: Integer read FScrollStep write SetScrollStep default 1;
 end;
 
 
-TbbScrollLabel1 = class(TLabel)
-  private
-    FCaption: String;
-    FScrolling: boolean;
-    FScrollInterval: integer;
-    FScrollAutoString:string;
-    FScrollGraph: Boolean;
-    FScrollStep: Integer;
-    FScrollDirection: TSCrollDirection;
-    FMargin: Integer;
-    FBidiMode: TBiDiMod;  // Disable the property
-    //FTransparent: Boolean; // disable property, use parentcolor and parentfont instead
-    //Borderwidth: integer;
-    CaptionBmp: Tbitmap;
-    CaptionRect: TRect;
-    //FTimerScroll: TTimer;
-    FTimerScroll:TFPTimer;
-    FTimerCanvas: TTimer;
-    ScrollText: String;
-    txtHeight, txtWidth: Integer;
-    ScrollBmp: TBitMap;
-    ScrollRect:Trect;
-    //BkGndBmp:Tbitmap;
-    //BkGndRect: Trect;
-    ScrollIndex: Integer;
-    BordersWidth:Integer;
-    procedure ReInit;
-    procedure OnTimerScrollL(Sender: TObject);         // Left to right
-    procedure OnTimerScrollR(Sender: TObject);         // Right to left
-    procedure OnTimerCanvas(Sender:Tobject);
-    procedure SetCaption(AValue: string);
-    procedure SetMargin(AValue: integer);
-    procedure SetScrolling(AValue: Boolean);
-    procedure SetScrollInterval(AValue:integer);
-    procedure SetScrollAutoString(AValue:string);
-    procedure SetScrollGraph(aValue: Boolean);
-    procedure SetScrollStep(aValue:Integer);
-    procedure SetScrollDirection(aValue: TScrollDirection);
-  protected
-
-  public
-    constructor Create(AOwner: TComponent); override;
-    destructor Destroy; override;
-  published
-    { D�clarations publi�es }
-    property Caption: string read FCaption write SetCaption;
-    property Margin: integer read FMargin write SetMargin default 0;
-    property BidiMode: TBiDiMod read FBidiMode default disabled;
-    property Scrolling: Boolean read FScrolling write SetScrolling default true;
-    property ScrollInterval: Integer read FScrollInterval write SetScrollInterval default 50;
-    property ScrollAutoString: string read FScrollAutoString write SetScrollAutoString;
-    property ScrollGraph: Boolean read FScrollGraph write SetScrollGraph default true;
-    property ScrollStep: Integer read FScrollStep write SetScrollStep default 1;
-    property ScrollDirection: TScrollDirection read FScrollDirection write SetScrollDirection default sdLeftToRight;
-  end;
 
 procedure Register;
 
@@ -525,7 +468,7 @@ begin
   end;
 end;
 
-// New TbbScrollLabel
+// New TbbScrollLabel procedures
 
 function  TbbScrollLabel.GetAlignment: TAlignment;
 begin
@@ -620,30 +563,44 @@ begin
   Invalidate;
 end;
 
+procedure TbbScrollLabel.CMColorChanged( Var Msg  :TLMessage );
+begin
+  Inherited CMVisiblechanged( Msg );
+  Init;
+  Invalidate;
+end;
+
 constructor TbbScrollLabel.Create(aOwner: Tcomponent);
 begin
   inherited;
   parent:= TwinControl(aOwner);
-  Height:= 15;
-  Width:= 50;
-  //Color:= parent.color;
   ScrollBmp:= TBitmap.Create;
   ScrollBmp.PixelFormat:= pf24bit;
+  Height:= 15;
+  Width:= 50;
+  Alignment:= taLeftJustify;
+  Layout:= tlTop;
   AutoSize:= false;
   ParentFont:= False;
   FScrollAutoString:= '...';
-  FScrolling:= true;
+  FScrollDirection:= sdLeftToRight;
+  FScrolling:= True;
   FSCrollGraph:= True;
   FScrollStep:= 1;
+  TimerSCrollBmp:= TTimer.Create(self);
+  TimerSCrollBmp.Interval:= 50;
+  TimerSCrollBmp.OnTimer:= @OnTimerSCrollBmp;
+  TimerSCrollBmp.Enabled:= true;
   TimerScroll:= TFPTimer.Create(self);
   TimerScroll.UseTimerThread:= true;
   FScrollInterval:= 50;
   TimerScroll.Interval:= FScrollInterval;
   TimerScroll.OnTimer:= @OnTimerScrollL;
-  TimerScroll.Enabled:= False;
+  TimerScroll.Enabled:= True;
   ScrollText:= Caption+FScrollAutoString;
   TextScroll:= Caption+FScrollAutoString;
   First:= true;
+  //Init;
 end;
 
 destructor TbbScrollLabel.Destroy;
@@ -659,7 +616,6 @@ end;
 
 // Procedure called when any property change to properly set variables
 
-
 procedure TbbScrollLabel.Init;
 begin
   TextScroll:= Caption+FScrollAutoString;
@@ -670,8 +626,10 @@ begin
   CaptionRect.Bottom:= Height-BorderSpacing.Bottom;
   if (color=cldefault) or (color=clnone) then bkcolor:= clForm //Parent.Color
   else bkColor:= color;
-  if Assigned(Canvas) or (csDesigning in ComponentState) then    // Canvas are processed only when component is loaded to avoid crashes
+  // Canvas enabled from Paint procedure
+  if OKCanvas then
   begin
+    CaptionWidth:= Canvas.TextWidth(Caption);
     TxtWidth:= Canvas.TextWidth(ScrollText);
     TxtHeight:= Canvas.TextHeight(ScrollText);
     Case Layout of
@@ -681,39 +639,44 @@ begin
     end;
     Case Alignment of
       taRightJustify: xOff:= Width-CaptionWidth;
+      taCenter: xOff:= (Width-CaptionWidth) div 2;
       else xOff:= 0;
     end;
-    CaptionWidth:= Canvas.TextWidth(Caption);
-    NoScrolling:= (CaptionWidth<Clientwidth) or (not scrolling) ;
-    //TimerScroll.Enabled:= NoSCrolling;
     Canvas.Brush.Style:= bssolid;
     Canvas.Brush.color:= bkColor;
-    ScrollBmp.Canvas.pen.color:= Font.Color;
     ScrollBmp.Height:= Height;
     ScrollBmp.Width:= txtWidth*2;
-    ScrollBmp.Canvas.Font.Assign(Canvas.Font);
-    ScrollRect:= Rect(0,0,2*txtWidth,txtHeight);
+    ScrollBmp.Canvas.Font.Assign(Font);
     ScrollBmp.Canvas.Brush.Style:= bssolid;
     ScrollBmp.Canvas.Brush.color:= bkColor;
-    ScrollBmp.Canvas.FillRect(0,0,ScrollBmp.Width, ScrollBmp.Height);
     ScrollBmp.Canvas.pen.color:= Font.Color;
-    ScrollBmp.Canvas.TextOut(xOff,yOff, ScrollText+ScrollText);
-    TimerScroll.Enabled:= true;
+    ScrollBmp.Canvas.FillRect(0,0,ScrollBmp.Width, ScrollBmp.Height);
   end;
-
 end;
+
+// Paint the component
 
 procedure TbbScrollLabel.Paint;
 begin
-  if NoScrolling or (csDesigning in ComponentState) then                         // See in init procedure
+  // Canvas related stuff is active once Inherited Paint is done. So, we can move most of related variables
+  // initialization in Init procedure
+  if not OKCanvas then
   begin
-    //Canvas.TextOut(xOff, yOff, Caption);
+    Inherited Paint;
+    OKCanvas:= true;
+    Init;
+  end;
+  if (not FSCrolling) or (CaptionWidth<Clientwidth) or (csDesigning in ComponentState) then
+  begin
     inherited Paint;
     exit;
   end;
   if FSCrollGraph then
   begin
-     Canvas.CopyRect(CaptionRect, ScrollBmp.Canvas, Rect(ScrollIndex,0,
+    // Write the scrolltext (Caption+ScrollAutostring+Caption+SCrollAutostring) on ScrollBmp
+    ScrollBmp.Canvas.TextOut(xOff,yOff, ScrollText+ScrollText);
+    // Copy part of ScrollBMP on the component canvas, timer increment part position
+    Canvas.CopyRect(CaptionRect, ScrollBmp.Canvas, Rect(ScrollIndex,0,
                      ScrollIndex+CaptionRect.Right-CaptionRect.left, Height));
   end else
   begin
@@ -754,213 +717,14 @@ begin
   Invalidate;
 end;
 
+// Timer to detect ScrollBmp is available
 
-// TbbScrollLabel1 procedures
-
-constructor TbbScrollLabel1.Create(AOwner: TComponent);
+procedure TbbScrollLabel.OnTimerScrollBmp(Sender: TObject);
 begin
-  inherited Create(AOwner);
-  Parent:= TWinControl(aOwner);
-  FCaption:='ScrollButton';
-  FScrolling:= true;
-  AutoSize:= False;
-  Width:= 75;
-  FMargin:= 0;
-  BordersWidth:= 3; // Arbitrary value for proper scrolling centering
-  FScrollInterval:=50;
-  FScrollAutoString:= '...';
-  FScrollGraph:= true;
-  FScrollStep:= 1;
-  //FTimerSCroll:= TTimer.Create(self);
-  FTimerSCroll:= TFPTimer.Create(self);
-  FTimerScroll.UseTimerThread:= true;
-  FTimerScroll.Enabled:= False;
-  FTimerScroll.OnTimer:= @OnTimerScrollL;
-  FTimerScroll.Interval:= FScrollInterval;
-  //FTimerScroll.StartTimer;
-  ScrollIndex:= 0;
-  inherited Layout:= Layout;
-  inherited Caption:= FCaption;
-  ScrollText:= '';
-  ScrollBmp:= Tbitmap.Create;
-  ScrollBmp.PixelFormat:= pf8bit;
-  //BkGndBmp:= Tbitmap.Create;
-  //BkGndBmp.PixelFormat:= pf8bit;
-  CaptionBmp:= Tbitmap.Create;
-  FTimerCanvas:= TTimer.Create(self);
-  FTimerCanvas.Enabled:= true;
-  FTimerCanvas.Interval:= 50;
-  FTimerCanvas.OnTimer:= @OntimerCanvas;
-  FBidiMode:= Disabled;
-  inherited BiDiMode:= bdLeftToRight;     end;
-
-// Canvas is not immediately created, so reinit until it is created
-// Needed to use margin proeprty when scroll is disabled
-
-procedure TbbScrollLabel1.OnTimerCanvas(sender: TObject);
-begin
-  if assigned(Canvas) then
+  if Assigned(SCrollBmp) and assigned(Canvas) then
   begin
-    FTimerCanvas.Enabled:= false;
-    ReInit;
-  end;
-end;
-
-procedure TbbScrollLabel1.SetCaption(AValue: string);
-begin
-  if fCaption=AValue then exit;
-  FCaption:=AValue;
-  inherited Caption:=FCaption;
-  ReInit;
-end;
-
-procedure TbbScrollLabel1.SetMargin(AValue: integer);
-begin
-  if FMargin=AValue then exit;
-  FMargin:=AValue;
-  //inherited Margin:= AValue;
-  ReInit;
-end;
-
-procedure TbbScrollLabel1.SetSCrolling(AValue: Boolean);
-begin
-  if FScrolling= AValue then exit;
-  FSCrolling:= AValue;
-  ReInit;
-end;
-
-procedure TbbScrollLabel1.SetScrollInterval(AValue:integer);
-begin
-  if FScrollInterval= AValue then exit;
-  FScrollInterval:= AValue;
-  FTimerScroll.Interval:= AValue;
-  //ReInit;  //Not needed, will be updated next timer tick
-end;
-
-procedure TbbScrollLabel1.SetSCrollAutoString(AValue:string);
-begin
-  if FSCrollAutoString= AValue then exit;
-  FSCrollAutoString:= AValue;
-  ReInit;
-end;
-
-procedure TbbScrollLabel1.SetSCrollGraph(AValue:Boolean);
-begin
-  if fScrollGraph= AValue then exit;
-  fsCrollGraph:= AValue;
-  Reinit;
-end;
-
-procedure TbbScrollLabel1.SetSCrollStep(AValue:Integer);
-begin
-  if fScrollStep=aValue then exit;
-  fSCrollStep:= AValue;
-  ReInit;
-end;
-
-procedure TbbScrollLabel1.SetSCrollDirection(aValue: TSCrollDirection);
-begin
-  if FScrollDirection=aValue then exit;
-  FScrollDirection:= aValue;
-  if aValue=sdLeftToRight then FTimerScroll.OnTimer:= @OnTimerScrollL
-  else FTimerScroll.OnTimer:= @OnTimerScrollR ;
-  //ReInit;  //Not needed, will be updated next timer tick
-end;
-
-destructor TbbScrollLabel1.Destroy;
-begin
-  FTimerSCroll.StopTimer;
-  FTimerCanvas.enabled:=false;
-  //if assigned(BkGndBmp) then BkGndBmp.Free;
-  //if assigned(ScrollBmp) then ScrollBmp.Free;
-  //if assigned(CaptionBmp) then CaptionBmp.Free;
-  if assigned(FTimerScroll) then FTimerSCroll.free;
-  if assigned(FTimerCanvas) then FTimerCanvas.free;
-  Inherited Destroy;
-end;
-
-procedure TbbScrollLabel1.ReInit;
-var
-  bkColor: TColor;
-begin
-  FTimerScroll.enabled:= false;  // before scrolling process
-  if csDesigning in ComponentState then exit;
-  inherited Caption:= '';   // avoid some flickering
-  if (color=cldefault) or (color=clnone) then bkcolor:= clform
-  else bkColor:= color;
-  Canvas.Font.Assign(Font);
-  TxtHeight:= Canvas.TextHeight(ScrollText);
-  // So, we scroll !
-  ScrollText:= FCaption+FScrollAutoString;
-  TxtHeight:= Canvas.TextHeight(ScrollText);
-  TxtWidth:= Canvas.TextWidth(ScrollText);
-  CaptionRect.Top:= (height-TxtHeight) div 2;
-  CaptionRect.Bottom:= CaptionRect.Top+TxtHeight;
-  //BkGndBmp.Width:= 1;
-  //BkGndBmp.Height:= 1;
-  //BkGndRect:= Rect(0, 0, 1, 1);
-  CaptionRect.Left:= FMargin;
-  CaptionRect.Right:= CaptionRect.Left+ClientWidth-FMargin*2;
-  // Get label background color (pixel at top left)
- { if color= clnone then BkGndBmp.Canvas.CopyRect(BkGndRect, Canvas,
-          Rect(CaptionRect.Left-1, CaptionRect.top, CaptionRect.Left, CaptionRect.Top+1))
-  else BkGndBmp.Canvas.CopyRect(BkGndRect, Canvas,
-          Rect(CaptionRect.Left, CaptionRect.top, CaptionRect.Left+1, CaptionRect.Top+1)) ; }
-  If fScrollGraph and (Canvas.TextWidth(FCaption)>=(ClientWidth-FMargin*2)+BordersWidth) then
-  begin
-    ScrollBmp.Canvas.Font.Assign(Font);
-    ScrollBmp.width:=  2*txtWidth;
-    ScrollBmp.Height:= txtHeight;
-    ScrollRect:= Rect(0,0,2*txtWidth,txtHeight);
-    //ScrollBmp.Canvas.StretchDraw(ScrollRect, BkGndBmp);
-    ScrollBmp.Canvas.Brush.Style:= bssolid;
-    ScrollBmp.Canvas.Brush.color:= bkColor;
-    //ScrollBmp.Canvas.FloodFill(0,0,bkColor, fssurface);
-    ScrollBmp.Canvas.TextOut(0,0, ScrollText+ScrollText);
-  end;
-  if (Canvas.TextWidth(FCaption) < (ClientWidth-FMargin*2)+BordersWidth) or not FScrolling then
-  begin
-    inherited Caption:= FCaption;
-    exit;
-  end;
-  FTimerScroll.Enabled:= FScrolling;
-end;
-
-// Timer procedure for left to right
-// separate procedures to reduce processing time in the timer event
-
-procedure TbbScrollLabel1.OnTimerScrollL(Sender: TObject);
-begin
-  //if not FScrolling then exit;
-  if fSCrollGraph then   // pixel by pixel
-  begin
-    if (ScrollIndex=0) then ReInit;
-    if ScrollIndex < (ScrollBmp.Width div 2)-1 then Inc(ScrollIndex, FSCrollStep)
-    else ScrollIndex:= 0;
-    Canvas.CopyRect(CaptionRect, ScrollBmp.Canvas, Rect(ScrollIndex,0,ScrollIndex+CaptionRect.Right-CaptionRect.left ,
-         txtHeight));
-  end else              // scroll char by char
-  begin
-    ScrollText:= Copy(ScrollText, 2, Length(ScrollText) - 1) + Copy(ScrollText,1,1) ;
-    inherited Caption:= scrolltext;
-  end;
-end;
-
-// Timer procedure for right to left
-
-procedure TbbScrollLabel1.OnTimerScrollR(Sender: TObject);
-begin
-  if fSCrollGraph then
-  begin
-    if (ScrollIndex=0) then ReInit;
-    if ScrollIndex >0 then Dec(ScrollIndex, FSCrollStep)
-    else ScrollIndex:= (ScrollBmp.Width div 2);
-    Canvas.CopyRect(CaptionRect, ScrollBmp.Canvas, Rect(ScrollIndex,0,ScrollIndex+CaptionRect.Right-CaptionRect.left ,
-         txtHeight));
-  end else                          // scroll char by char
-  begin
-    ScrollText:=Copy(ScrollText,Length(ScrollText),1)+Copy(ScrollText, 1, Length(ScrollText)-1);
-    inherited Caption:= scrolltext;
+    Init;
+    TimerScrollBmp.Enabled:= false;
   end;
 end;
 
