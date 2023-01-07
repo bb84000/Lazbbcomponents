@@ -1,0 +1,15 @@
+lazbbcomponents
+
+Version 1.0.3.0 - 21/12/2022
+- TbbScrollLabel rewritten to gain Linux compatibility. Margin property removed.
+
+Version 1.0.3.1 - 04/01/2023
+- TbbSCrollLabel rewritten to get a better scrolling.
+
+Version 1.0.3.2 - 05/01/2023
+- TbbScrollLabel optimizations for Windows and Linux
+
+Version 1.0.3.3 - 07/01/2023
+- TbbScrollLabel : Font color change properly coded
+
+
