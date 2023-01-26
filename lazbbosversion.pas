@@ -1,7 +1,7 @@
 {******************************************************************************
  lazbbosversion - Returns OS version information (Windows, Linux and Mac
  Component version, replace previous units
- sdtp - bb - october 2022
+ sdtp - bb - january 2023
  Some windows functions and windows structures are dynamically loaded in
    lazbbosversiobnabse unit
  Localization data in application .lng file
@@ -19,7 +19,7 @@ uses
   {$ELSE}
     process,
   {$ENDIF}
-  Classes, SysUtils, LResources, lazbbosversionbase;
+  Classes, SysUtils, LResources, lazbbosversionbase, lazbbinifiles;
 
 type
   TbbOsVersion = class(TComponent)
@@ -58,7 +58,7 @@ type
     constructor Create(aOwner: Tcomponent); override;
     destructor Destroy; override;
     procedure GetSysInfo;
-
+    procedure Translate(LngFile: TBbIniFile);
   published
     {$IFDEF WINDOWS}
     property VerMaj: integer read FVerMaj;      // major version number
@@ -630,6 +630,30 @@ end;
 
 {$ENDIF}
 
-
+procedure TbbOSVersion.Translate(LngFile: TBbIniFile);
+var
+  i: Integer;
+  A: TStringArray;
+begin
+  if assigned (Lngfile) then
+  with LngFile do
+  begin
+    {$IFDEF WINDOWS}
+    ProdStrs.Strings[1]:= ReadString('OSVersion','Home','Famille'); ;
+    ProdStrs.Strings[2]:= ReadString('OSVersion','Professional','Entreprise');
+    ProdStrs.Strings[3]:= ReadString('OSVersion','Server','Serveur');
+    for i:= 0 to Win10Strs.count-1 do
+    begin
+      A:= Win10Strs.Strings[i].split('=');
+      Win10Strs.Strings[i]:= A[0]+'='+ReadString('OSVersion',A[0],A[1]);
+    end;
+    for i:= 0 to Win11Strs.count-1 do
+    begin
+      A:= Win11Strs.Strings[i].split('=');
+      Win11Strs.Strings[i]:= A[0]+'='+ReadString('OSVersion',A[0],A[1]);
+    end;
+    {$ENDIF}
+  end;
+end;
 
 end.

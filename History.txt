@@ -12,4 +12,7 @@ Version 1.0.3.2 - 05/01/2023
 Version 1.0.3.3 - 07/01/2023
 - TbbScrollLabel : Font color change properly coded
 
+Version 1.0.3.4 - 25/01/2023
+- Added translation procedure to TbbOsVersion
+
 

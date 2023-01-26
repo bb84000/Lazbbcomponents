@@ -666,6 +666,31 @@ begin
   CaptionRect.Bottom:= Height-BorderSpacing.Bottom;
   if (color=cldefault) or (color=clnone) then bkcolor:= clForm
   else bkColor:= color;
+ if Assigned(SCrollBmp) then
+  begin
+    ScrollBmp.SetSize(Width, Height);
+    ScrollBmp.Canvas.Font.Assign(Font);
+    TxtWidth:= ScrollBmp.Canvas.TextWidth(ScrollText);
+    TxtHeight:= ScrollBmp.Canvas.TextHeight(ScrollText);
+    ScrollBmp.Width:= txtWidth*2;
+    ScrollBmp.Canvas.Brush.Style:= bssolid;
+    ScrollBmp.Canvas.Brush.color:= bkColor;
+    ScrollBmp.Canvas.pen.color:= Font.Color;
+    CaptionWidth:= ScrollBmp.Canvas.TextWidth(Caption);
+    ScrollBmp.Canvas.FillRect(0,0,ScrollBmp.Width, ScrollBmp.Height);
+    Case Layout of
+      tlCenter: yOff:= (Height-txtHeight) div 2;
+      tlBottom: yOff:= Height-txtHeight;
+      else yOff:= 0;
+    end;
+    Case Alignment of
+      taRightJustify: xOff:= Width-CaptionWidth;
+      taCenter: xOff:= (Width-CaptionWidth) div 2;
+      else xOff:= 0;
+    end;
+    //Write the scrolltext (Caption+ScrollAutostring+Caption+SCrollAutostring) on ScrollBmp
+    ScrollBmp.Canvas.TextOut(xOff,yOff, ScrollText+ScrollText);
+  end;
   ReInit:= True;
 end;
 
@@ -675,10 +700,10 @@ procedure TbbScrollLabel.Paint;
 begin
   // Reinit set at true in Init procedure when some properties changes,
   // need to reload canvas related variables here
-  if ReInit then
-  begin
-    ReInit:= False;
-    CaptionWidth:= Canvas.TextWidth(Caption);
+  //if ReInit then
+  //begin
+  //  ReInit:= False;
+{    CaptionWidth:= Canvas.TextWidth(Caption);
     TxtWidth:= Canvas.TextWidth(ScrollText);
     TxtHeight:= Canvas.TextHeight(ScrollText);
     Case Layout of
@@ -690,17 +715,17 @@ begin
       taRightJustify: xOff:= Width-CaptionWidth;
       taCenter: xOff:= (Width-CaptionWidth) div 2;
       else xOff:= 0;
-    end;
+    end; }
     Canvas.Brush.Style:= bssolid;
     Canvas.Brush.color:= bkColor;
-    ScrollBmp.Width:= txtWidth*2;
+   { ScrollBmp.Width:= txtWidth*2;
     ScrollBmp.Height:= Height;
     ScrollBmp.Canvas.Font.Assign(Font);
     ScrollBmp.Canvas.Brush.Style:= bssolid;
     ScrollBmp.Canvas.Brush.color:= bkColor;
     ScrollBmp.Canvas.pen.color:= Font.Color;
-    ScrollBmp.Canvas.FillRect(0,0,ScrollBmp.Width, ScrollBmp.Height);
-  end;
+    ScrollBmp.Canvas.FillRect(0,0,ScrollBmp.Width, ScrollBmp.Height); }
+  //end;
   if (not FSCrolling) or (CaptionWidth<Clientwidth) or (csDesigning in ComponentState) then
   begin
     inherited Paint;
@@ -709,7 +734,7 @@ begin
   if FSCrollGraph then
   begin
     // Write the scrolltext (Caption+ScrollAutostring+Caption+SCrollAutostring) on ScrollBmp
-    ScrollBmp.Canvas.TextOut(xOff,yOff, ScrollText+ScrollText);
+    //ScrollBmp.Canvas.TextOut(xOff,yOff, ScrollText+ScrollText);
     // Copy part of ScrollBMP on the component canvas, timer increment part position
     Canvas.CopyRect(CaptionRect, ScrollBmp.Canvas, Rect(ScrollIndex,0,
                      ScrollIndex+CaptionRect.Right-CaptionRect.left, Height));
