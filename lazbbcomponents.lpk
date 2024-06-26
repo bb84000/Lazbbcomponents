@@ -5,7 +5,7 @@
     <Name Value="lazbbcomponents"/>
     <Type Value="RunAndDesignTime"/>
     <AddToProjectUsesSection Value="True"/>
-    <Author Value="bb - sdtp - september 2022"/>
+    <Author Value="bb - sdtp - june 2024"/>
     <AutoUpdate Value="OnRebuildingAll"/>
     <CompilerOptions>
       <Version Value="11"/>
@@ -35,7 +35,7 @@ Extra components with properties unavailable in Lazarus/FPC native components
 **TbbOsVersion**: Provide OS informations."/>
     <License Value="Open source
 Free to use"/>
-    <Version Major="1" Release="3" Build="4"/>
+    <Version Major="1" Release="4"/>
     <Files Count="6">
       <Item1>
         <Filename Value="lazbbcontrols.pas"/>

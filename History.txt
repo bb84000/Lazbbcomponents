@@ -15,4 +15,7 @@ Version 1.0.3.3 - 07/01/2023
 Version 1.0.3.4 - 25/01/2023
 - Added translation procedure to TbbOsVersion
 
+Version 1.0.4.0 - 26/06/2024
+- Moved Windows 10 & 11 version list to resource
+
 

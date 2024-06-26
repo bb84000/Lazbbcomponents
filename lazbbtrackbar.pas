@@ -560,8 +560,10 @@ begin
     VK_TAB: exit;              // let the tab key move focus to another component
     VK_HOME: if not (ssCtrl in Shift) then SetPosition(FMin);            // home is always Min
     VK_END: if not (ssCtrl in Shift) then SetPOsition(Fmax);             // End is always Max value
-    VK_PRIOR: if not (ssCtrl in Shift) then step:= -FFrequency;          // page Up always increase value
-    VK_NEXT: if not (ssCtrl in Shift) then step:= FFrequency;            // page Down always decrease value
+    VK_PRIOR: if not (ssCtrl in Shift) and (FOrientation=tbVertical) then
+       if FReversed then step:= FFrequency else step:= -FFrequency;
+    VK_NEXT: if not (ssCtrl in Shift) and (FOrientation=tbVertical) then
+       if FReversed then step:= -FFrequency else step:= FFrequency;
     VK_UP: if (not (ssCtrl in Shift)) and (FOrientation=tbVertical) then
       if FReversed then step:= FKeyIncrement else step:= -FKeyIncrement;
     VK_DOWN: if (not (ssCtrl in Shift)) and (FOrientation=tbVertical) then
