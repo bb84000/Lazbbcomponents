@@ -1,10 +1,13 @@
 {******************************************************************************
  lazbbosversion - Returns OS version information (Windows, Linux and Mac
  Component version, replace previous units
- sdtp - bb - january 2023
+ sdtp - bb - june 2024
  Some windows functions and windows structures are dynamically loaded in
    lazbbosversiobnabse unit
  Localization data in application .lng file
+ - 29 June 2024 : Replaced windows version strings constants with resources
+                  and/or csv files (to be placed in lang folder)
+ - 24 september 2024 : updated for windows 11 24H2 build
 ******************************************************************************}
 
 unit lazbbOsVersion;
@@ -19,7 +22,7 @@ uses
   {$ELSE}
     process,
   {$ENDIF}
-  Classes, SysUtils, LResources, lazbbosversionbase, lazbbinifiles;
+  Classes, SysUtils, LResources, lazbbosversionbase, lazbbinifiles, dialogs;
 
 type
   TbbOsVersion = class(TComponent)
@@ -43,11 +46,9 @@ type
     Init: Boolean;
    {$IFDEF WINDOWS}
       fProdStrs: TStrings;
-      fWin10Strs: TStrings;
-      fWin11Strs: Tstrings;
+      Win10Strs: TStrings;
+      Win11Strs: Tstrings;
       procedure SetProdStrs(const value: TStrings);
-      procedure SetWin10Strs(const value: TStrings);
-      procedure SetWin11Strs(const value: TStrings);
       procedure ListChanged(Sender: Tobject);
       function IsWin64: Boolean;
       procedure GetNT32Info;
@@ -69,8 +70,6 @@ type
     property VerTyp: integer read FVerTyp;      // Windows type
     property VerProd : String read FVerProd;    // Version type
     property ProdStrs: TStrings read fProdStrs write SetProdStrs;
-    property Win10Strs:  TStrings read fWin10Strs write SetWin10Strs;
-    property Win11Strs:  TStrings read fWin11Strs write SetWin11Strs;
     {$ELSE}
     property KernelName: string read FKernelName;
     property KernelRelease: string read FKernelRelease;
@@ -282,8 +281,8 @@ type
                  'Server';
 
     // First element: build number, second element: english
-
-    Windows10Strs = '00000=Unknown version'+LineEnding+
+    // Replaced with resources
+    {Windows10Strs = '00000=Unknown version'+LineEnding+
                     '10240=v 1507 "July 2015 update"'+LineEnding+
                     '10586=v 1511 "November 2015 update"'+LineEnding+
                     '14393=v 1607 "July 2016 (Anniversary update)"'+LineEnding+
@@ -299,11 +298,13 @@ type
                     '19044=v 21H2 "November 2021 update"'+LineEnding+
                     '19045=v 22H2 "October 2022 update"';
 
+
     Windows11Strs = '00000=Unknown version'+LineEnding+
                     '22000=v 21H2 "October 2021 Initial version"'+LineEnding+
                     '22621=v 22H2 "September 2022 update"'+LineEnding+
-                    '22631=v 23H2 "October 2023 update"'+LineEnding+
-                    '26100=v 24H2 "October 2024 update"';
+                    '22631=v 23H2 "October 2023 update"'+
+                    '26100=v 24H2 "October 2024 update"'; }
+
 
 var
     fVerProEx: DWORD;
@@ -317,10 +318,45 @@ implementation
 procedure Register;
 begin
   {$I lazbbosversion_icon.lrs}
+  {$R lazbbosversion_defs.rc}     //OS versions builds and names
   RegisterComponents('lazbbcomponents',[TbbOsVersion]);
 end;
 
 constructor TbbOsVersion.Create(aOwner: Tcomponent);
+{$IFDEF WINDOWS}
+const
+  RT_RCDATA = MAKEINTRESOURCE(10);
+  // nested function
+  function PopulateWinList(sl: TStrings; resname: String): Boolean;
+  var
+    rs: TStream;
+    begin
+      result:= false;
+      TStringList(sl).OnChange:= @ListChanged;
+      // Versions files can be located in lang subfolder
+      // File content not tested. Be prudent !
+
+      if FileExists('lang\'+resname+'.csv') then
+      try
+        rs:= TFileStream.Create('lang\'+resname, fmOpenRead);
+        result:= true;
+      except
+      end;
+      if result=false then     //file not found or read error, load resource
+      try
+        rs := TResourceStream.Create(HINSTANCE, UpperCase(resname), RT_RCDATA);
+      except
+        rs := TStringStream.Create('00000;Unknown version');
+      end;
+      // Now transfer stream to string list
+      try
+        sl.LoadFromStream(rs);
+      finally
+        result:= true;
+        rs.Free;
+      end;
+  end;  // function end
+{$ENDIF}
 begin
   inherited Create(aOwner);
   // Initialize variables
@@ -339,18 +375,16 @@ begin
   FNetworkNode:='';
   FVerDetail:='';
   {$IFDEF WINDOWS}
-     // Create and populate product type list property to allow further translation
+     // Create and populate product list
      fProdStrs:= TstringList.Create;
      TStringList(fProdStrs).OnChange:= @ListChanged;
      fProdStrs.Text:= ProductStrs;
      // Create and populate Windows 10 version list property
-     fWin10Strs:= TstringList.Create;
-     TStringList(fWin10Strs).OnChange:= @ListChanged;
-     fWin10Strs.Text:= Windows10Strs;
+     Win10Strs:= TstringList.Create;
+     PopulateWinList(Win10Strs, 'windows10_en');
      // Windows 11
-     fWin11Strs:= TstringList.Create;
-     TStringList(fWin11Strs).OnChange:= @ListChanged;
-     fWin11Strs.Text:= Windows11Strs;
+     Win11Strs:= TstringList.Create;
+     PopulateWinList(Win11Strs, 'windows11_en');
   {$ENDIF}
   init:= true;
   GetSysInfo;
@@ -360,8 +394,8 @@ destructor TbbOsVersion.Destroy;
 begin
 {$IFDEF WINDOWS}
   if assigned(fProdStrs) then fProdStrs.free;
-  if assigned(fWin10Strs) then fWin10Strs.free;
-  if assigned(fWin11Strs) then fWin11Strs.free;
+  if assigned(Win10Strs) then Win10Strs.free;
+  if assigned(Win11Strs) then Win11Strs.free;
 {$ENDIF}
   inherited;
 end;
@@ -374,16 +408,6 @@ begin
   begin
     fProdStrs.Assign(value);
   end;
-end;
-
-procedure TbbOsVersion.SetWin10Strs(const value: TStrings);
-begin
-  if fWin10Strs<>value then fWin10Strs.Assign(value);
-end;
-
-procedure TbbOsVersion.SetWin11Strs(const value: TStrings);
-begin
-  if fWin11Strs<>value then fWin11Strs.Assign(value);
 end;
 
 procedure TbbOsVersion.ListChanged(Sender: Tobject);
@@ -555,11 +579,11 @@ begin
                   begin
                     fVerTyp:= 19;      // Windows 10 build number start with 10000
                     // Match builds to Win 10 version commercial name, Build numbers are in Win10build array
-                    A:= Win10Strs.Strings[0].Split('='); //'Unknown version'
+                    A:= Win10Strs.Strings[0].Split(';'); //'Unknown version'
                     FVersup:= A[1];
                     for i:= 0 to Win10Strs.Count-1 do
                     begin
-                      A:= Win10Strs.Strings[i].Split('=');
+                      A:= Win10Strs.Strings[i].Split(';');
                       if FVerBuild=StrToInt(A[0]) then
                       begin
                         FVersup:= A[1];
@@ -569,11 +593,11 @@ begin
                   end else
                   begin
                     fVerTyp:= 22  ;  // Windows 11 build number start with 22000
-                    A:= Win11Strs.Strings[0].Split('='); //'Unknown version'
+                    A:= Win11Strs.Strings[0].Split(';'); //'Unknown version'
                     FVersup:= A[1];
                     for i:= 0 to Win11Strs.Count-1 do
                     begin
-                      A:= Win11Strs.Strings[i].Split('=');
+                      A:= Win11Strs.Strings[i].Split(';');
                       if FVerBuild=StrToInt(A[0]) then
                       begin
                         FVersup:= A[1];
@@ -645,13 +669,13 @@ begin
     ProdStrs.Strings[3]:= ReadString('OSVersion','Server','Serveur');
     for i:= 0 to Win10Strs.count-1 do
     begin
-      A:= Win10Strs.Strings[i].split('=');
-      Win10Strs.Strings[i]:= A[0]+'='+ReadString('OSVersion',A[0],A[1]);
+      A:= Win10Strs.Strings[i].split(';');
+      Win10Strs.Strings[i]:= A[0]+';'+ReadString('OSVersion',A[0],A[1]);
     end;
     for i:= 0 to Win11Strs.count-1 do
     begin
-      A:= Win11Strs.Strings[i].split('=');
-      Win11Strs.Strings[i]:= A[0]+'='+ReadString('OSVersion',A[0],A[1]);
+      A:= Win11Strs.Strings[i].split(';');
+      Win11Strs.Strings[i]:= A[0]+';'+ReadString('OSVersion',A[0],A[1]);
     end;
     {$ENDIF}
   end;

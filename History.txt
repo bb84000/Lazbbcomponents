@@ -18,4 +18,8 @@ Version 1.0.3.4 - 25/01/2023
 Version 1.0.4.0 - 26/06/2024
 - Moved Windows 10 & 11 version list to resource
 
+Version 1.0.5.0 - 19/11/2024
+- Reverted Windows 10 & 11 version list to component code
+
+
 

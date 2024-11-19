@@ -35,7 +35,7 @@ Extra components with properties unavailable in Lazarus/FPC native components
 **TbbOsVersion**: Provide OS informations."/>
     <License Value="Open source
 Free to use"/>
-    <Version Major="1" Release="4"/>
+    <Version Major="1" Release="5"/>
     <Files Count="6">
       <Item1>
         <Filename Value="lazbbcontrols.pas"/>
